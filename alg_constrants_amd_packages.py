@@ -1,3 +1,6 @@
+# ------------------------------------------- #
+# ------------------IMPORTS:----------------- #
+# ------------------------------------------- #
 import os
 import time
 from collections import namedtuple, deque
@@ -23,20 +26,26 @@ from torch.utils.data import DataLoader, Dataset
 # from pytorch_lightning.callbacks import Callback
 # from pytorch_lightning import loggers as pl_loggers
 
-
-ENV = 'LunarLanderContinuous-v2'
+# ------------------------------------------- #
+# ------------------FOR ENV:----------------- #
+# ------------------------------------------- #
+from pettingzoo.mpe import simple_spread_v2
+ENV = simple_spread_v2.env(N=3, local_ratio=0.5, max_cycles=25)
+# ENV = 'LunarLanderContinuous-v2'
 # ENV='Pendulum-v0'
 # ENV = "BipedalWalker-v3"
 # ENV = "CarRacing-v0"
 # ENV='MountainCarContinuous-v0'
 NUMBER_OF_GAMES = 10
 SAVE_RESULTS = True
+# SAVE_RESULTS = False
 PATH = 'actor_net.pt'
 
 # NEPTUNE = True
 NEPTUNE = False
 PLOT_LIVE = True
 # PLOT_LIVE = False
+
 # ------------------------------------------- #
 # ------------------FOR ALG:----------------- #
 # ------------------------------------------- #
