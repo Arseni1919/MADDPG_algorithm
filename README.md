@@ -21,6 +21,16 @@
 
 ## Credits:
 
+### MADDPG:
+
+- []()
+- []()
+- []()
+- []()
+- []()
+
+### DDPG:
+
 - [DDPG | OpenAI](https://spinningup.openai.com/en/latest/algorithms/ddpg.html)
 - [Environments | OpenAI](https://gym.openai.com/envs/#box2d)
 - [Optimization | Pytorch-Lightning](https://pytorch-lightning.readthedocs.io/en/latest/common/optimizers.html#automatic-optimization)
