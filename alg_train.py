@@ -31,7 +31,7 @@ def train():
     train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
     # Train
-    MADDPG_module = ALGModule(
+    ALG_module_instance = ALGModule(
         env,
         critic_net_1,
         critic_target_net_1,
@@ -41,7 +41,7 @@ def train():
         train_dataset,
         train_dataloader
     )
-    MADDPG_module.fit()
+    ALG_module_instance.fit()
 
     # Save Results
     if SAVE_RESULTS:
@@ -54,3 +54,29 @@ def train():
 
 if __name__ == '__main__':
     train()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
