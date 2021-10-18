@@ -20,6 +20,7 @@ from torch import nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 # from torchvision import transforms
+from torch.distributions import Normal
 from torch.utils.data import random_split
 from torch.utils.data import DataLoader, Dataset
 

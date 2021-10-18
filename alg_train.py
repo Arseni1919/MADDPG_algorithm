@@ -2,7 +2,7 @@ from alg_constrants_amd_packages import *
 from alg_general_functions import *
 from alg_logger import run
 from alg_nets import *
-from alg_memory import *
+from alg_data_module import *
 from alg_module import *
 
 
@@ -10,36 +10,40 @@ def train():
     # Initialization
 
     # ENV
-    obs_size = env.observation_space.shape[0]
-    n_actions = env.action_space.shape[0]
+    env =ENV
+    obs_size = env.observation_spaces.keys()[0]
+    n_actions = env.action_spaces.keys()[0]
 
     # NETS
-    critic_net_1 = CriticNet(obs_size, n_actions)
-    critic_target_net_1 = CriticNet(obs_size, n_actions)
-    critic_target_net_1.load_state_dict(critic_net_1.state_dict())
+    critic_net_dict, critic_target_net_dict, actor_net_dict = {}, {}, {}
+    for agent in env.agents:
 
-    critic_net_2 = CriticNet(obs_size, n_actions)
-    critic_target_net_2 = CriticNet(obs_size, n_actions)
-    critic_target_net_2.load_state_dict(critic_net_2.state_dict())
+        obs_size, n_actions = env.observation_space(agent), env.action_space(agent)
 
-    actor_net = ActorNet(obs_size, n_actions)
+        critic_net_i = CriticNet(obs_size, n_actions)
+        critic_target_net_i = CriticNet(obs_size, n_actions)
+        critic_target_net_i.load_state_dict(critic_net_i.state_dict())
+        actor_net = ActorNet(obs_size, n_actions)
+
+        critic_net_dict[agent] = critic_net_i
+        critic_target_net_dict[agent] = critic_target_net_i
+        actor_net_dict[agent] = actor_net
 
     # REPLAY BUFFER
-    train_dataset = ALGDataset()
-    fill_the_buffer(train_dataset, env, actor_net)
-    train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    datamodule = ALGDataModule()
+    datamodule.setup(env, actor_net_dict)
 
     # Create module
     ALG_module_instance = ALGModule(
         ENV,
-        critic_nets,
-        critic_target_nets,
-        actor_nets,
-        train_dataset,
-        train_dataloader
+        critic_net_dict,
+        critic_target_net_dict,
+        actor_net_dict,
     )
+
     # Train
-    ALG_module_instance.fit()
+    # trainer.fit(model, dm)
+    ALG_module_instance.fit(datamodule)
 
     # Save Results
     if SAVE_RESULTS:

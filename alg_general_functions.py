@@ -3,31 +3,20 @@ import pettingzoo
 from alg_constrants_amd_packages import *
 
 
-
-def get_action(state, model: nn.Module, step=0):
+def get_action(env, agent, observation, done, model: nn.Module, step=0):
     with torch.no_grad():
-        model_output = model.get_action(np.expand_dims(state, axis=0))
+        model_output = model.get_action(np.expand_dims(observation, axis=0))
         model_output = torch.squeeze(model_output)
         action = model_output.detach().numpy()
+        action = env.action_space(agent).sample() if not done else None
         # noise = ACT_NOISE / np.log(step) if step > 5000 else ACT_NOISE
         # action = action + np.random.normal(0, noise, 2)
         # action = np.clip(action, -1, 1)
         return action
 
 
-def fill_the_buffer(train_dataset, env, actor_net):
-    state = env.reset()
-    while len(train_dataset) < UPDATE_AFTER:
-        action = get_action(state, actor_net)
-        next_state, reward, done, _ = env.step(action)
-        # env.render()
-        experience = Experience(state=state, action=action, reward=reward, done=done, new_state=next_state)
-        train_dataset.append(experience)
-        if done:
-            state = env.reset()
-
-    env.close()
-
+def get_actions(env, observations, dones, models):
+    return {agent: get_action(env, agent, observations[agent], dones[agent], models[agent]) for agent in env.agents}
 
 def play(times: int = 1, models=None):
     env = ENV
@@ -36,10 +25,11 @@ def play(times: int = 1, models=None):
         print('[Parallel Env]')
         with torch.no_grad():
             observations = env.reset()
+            dones = {agent: False for agent in env.agents}
             total_reward, game = 0, 0
             for step in range(times * MAX_CYCLES):
                 if models:
-                    actions = get_action(observations, models)
+                    actions = get_actions(env, observations, dones, models)
                 else:
                     actions = {agent: ENV.action_spaces[agent].sample() for agent in env.agents}
                 observations, rewards, dones, infos = ENV.step(actions)
@@ -47,6 +37,7 @@ def play(times: int = 1, models=None):
                 total_reward += sum(rewards.values())
                 if all(dones.values()):
                     observations = env.reset()
+                    dones = {agent: False for agent in env.agents}
                     game += 1
                     print(f'{colored("finished", "green")} game {game} with a total reward: {total_reward}')
                     total_reward = 0
@@ -62,7 +53,7 @@ def play(times: int = 1, models=None):
                 for agent in env.agent_iter():
                     observation, reward, done, info = env.last()
                     if models:
-                        action = get_action(observation, models)
+                        action = get_action(env, agent, observation, done, models[agent])
                     else:
                         action = env.action_spaces[agent].sample()
                     action = action if not done else None

@@ -12,34 +12,28 @@ class ALGModule:
             critic_net_dict,
             critic_target_net_dict,
             actor_net_dict,
-            train_dataset: ALGDataset,
-            train_dataloader: torch.utils.data.DataLoader
     ):
         self.env = env
 
         self.critic_net_dict = critic_net_dict
         self.critic_target_net_dict = critic_target_net_dict
-
         self.actor_net_dict = actor_net_dict
-
-        self.train_dataset = train_dataset
-        self.train_dataloader = train_dataloader
 
         # create optimizers
         self.critic_opts = [torch.optim.Adam(net.parameters(), lr=LR_CRITIC) for net in self.critic_net_dict]
         self.actor_opts = [torch.optim.Adam(net.parameters(), lr=LR_ACTOR) for net in self.actor_net_dict]
 
-    def fit(self):
+    def fit(self, dm):
         if isinstance(self.env, pettingzoo.ParallelEnv):
             print('[Parallel Env]')
-            self.fit_parallel_env()
+            self.fit_parallel_env(dm)
         elif isinstance(self.env, pettingzoo.AECEnv):
             print('[AECEnv Env]')
             self.fit_sequential_env()
         else:
             raise RuntimeError('[ERROR]: The instance of env is unknown.')
 
-    def fit_parallel_env(self):
+    def fit_parallel_env(self, dm):
 
         # FIRST INIT
         observations = self.env.reset()
@@ -55,7 +49,7 @@ class ALGModule:
 
             # ADD TO EXPERIENCE BUFFER
             experience = Experience(state=observations, action=actions, reward=rewards, done=dones, new_state=new_observations)
-            self.train_dataset.append(experience)
+            dm.train_dataset.append(experience)
             observations = new_observations
 
             if all(dones.values()):
@@ -171,7 +165,10 @@ class ALGModule:
         pass
 
     def get_action_of_agent(self, agent, observation, done):
-        # random process -> torch.normal(mean=torch.tensor(10.0), std=torch.tensor(10.0))
+        # (1) random process -> torch.normal(mean=torch.tensor(10.0), std=torch.tensor(10.0))
+        # (2) m = Normal(torch.tensor([0.0]), torch.tensor([1.0]))
+        #     m.sample()
+
         # agent_model = self.actor_net_dict[agent]
         # action = agent_model(observation) if not done else None
         action = self.env.action_spaces[agent].sample()

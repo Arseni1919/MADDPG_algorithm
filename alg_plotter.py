@@ -1,6 +1,7 @@
 from alg_constrants_amd_packages import *
 from alg_logger import run
 
+
 class ALGPlotter:
     def __init__(self):
         if PLOT_LIVE:
