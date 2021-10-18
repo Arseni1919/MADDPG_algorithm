@@ -1,6 +1,5 @@
 from alg_constrants_amd_packages import *
 from alg_general_functions import *
-from alg_logger import run
 from alg_nets import *
 from alg_data_module import *
 from alg_module import *

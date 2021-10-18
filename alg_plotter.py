@@ -1,5 +1,6 @@
 from alg_constrants_amd_packages import *
-from alg_logger import run
+
+
 
 
 class ALGPlotter:
@@ -9,6 +10,22 @@ class ALGPlotter:
             self.actor_losses = []
             self.critic_losses_1 = []
             self.critic_losses_2 = []
+
+        if NEPTUNE:
+            self.run = neptune.init(project='1919ars/PL-implementations',
+                               tags=['MADDPG'],
+                               name=f'MADDPG_{time.asctime()}',
+                               source_files=['alg_constrants_amd_packages.py'])
+            # Neptune.ai Logger
+            PARAMS = {
+                'GAMMA': GAMMA,
+                # 'LR': LR,
+                # 'CLIP_GRAD': CLIP_GRAD,
+                'MAX_STEPS': MAX_STEPS,
+            }
+            run['parameters'] = PARAMS
+        else:
+            self.run = {}
 
     def plot_online(self, graph_dict):
         # plot live:
@@ -39,11 +56,10 @@ class ALGPlotter:
     def plot_summary(self):
         pass
 
-    @staticmethod
-    def neptune_update(loss):
+    def neptune_update(self, loss):
         if NEPTUNE:
-            run['acc_loss'].log(loss)
-            run['acc_loss_log'].log(f'{loss}')
+            self.run['acc_loss'].log(loss)
+            self.run['acc_loss_log'].log(f'{loss}')
 
 
 plotter = ALGPlotter()
