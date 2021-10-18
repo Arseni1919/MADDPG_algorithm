@@ -41,7 +41,8 @@ class ALGModule:
                 action = self.get_action_of_agent(agent, observation, done)
                 self.env.step(action)
                 total_reward += reward
-                self.render()
+                # self.render()
+                self.training_step(agent)
 
             print(f'finished episode {episode} with a total reward: {total_reward}')
 
