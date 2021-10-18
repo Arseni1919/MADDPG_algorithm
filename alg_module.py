@@ -1,51 +1,51 @@
 from alg_constrants_amd_packages import *
 from alg_general_functions import *
 from alg_memory import ALGDataset
-from alg_net import ActorNet, CriticNet
-from alg_logger import run
+from alg_nets import ActorNet, CriticNet
+from alg_plotter import plotter
 
 
 class ALGModule:
     def __init__(
             self,
-            env: gym.Env,
-            critic_net_1: CriticNet,
-            critic_target_net_1: CriticNet,
-            critic_net_2: CriticNet,
-            critic_target_net_2: CriticNet,
-            actor_net: ActorNet,
+            env: pettingzoo.AECEnv,
+            critic_net_list: list[CriticNet],
+            critic_target_net_list: list[CriticNet],
+            actor_net_list: list[ActorNet],
             train_dataset: ALGDataset,
             train_dataloader: torch.utils.data.DataLoader
     ):
         self.env = env
 
-        self.critic_net_1 = critic_net_1
-        self.critic_target_net_1 = critic_target_net_1
-        self.critic_net_2 = critic_net_2
-        self.critic_target_net_2 = critic_target_net_2
-        self.critic_nets = [self.critic_net_1, self.critic_net_2]
-        self.critic_target_nets = [self.critic_target_net_1, self.critic_target_net_2]
+        self.critic_net_list = critic_net_list
+        self.critic_target_net_list = critic_target_net_list
 
-        self.actor_net = actor_net
+        self.actor_net_list = actor_net_list
 
         self.train_dataset = train_dataset
         self.train_dataloader = train_dataloader
 
-        self.critic_opt_1 = torch.optim.Adam(self.critic_net_1.parameters(), lr=LR_CRITIC)
-        self.critic_opt_2 = torch.optim.Adam(self.critic_net_2.parameters(), lr=LR_CRITIC)
-        self.critic_opts = [self.critic_opt_1, self.critic_opt_2]
-
-        self.actor_opt = torch.optim.Adam(self.actor_net.parameters(), lr=LR_ACTOR)
-
-        if PLOT_LIVE:
-            self.fig, _ = plt.subplots(nrows=2, ncols=3, figsize=(12, 6))
-            self.actor_losses = []
-            self.critic_losses_1 = []
-            self.critic_losses_2 = []
+        # create optimizers
+        self.critic_opts = [torch.optim.Adam(net.parameters(), lr=LR_CRITIC) for net in self.critic_net_list]
+        self.actor_opts = [torch.optim.Adam(net.parameters(), lr=LR_ACTOR) for net in self.actor_net_list]
 
     def fit(self):
+        # random process -> torch.normal(mean=torch.tensor(10.0), std=torch.tensor(10.0))
 
-        state = self.env.reset()
+        for episode in range(M_EPISODES):
+            self.validation_step(episode)
+            observation = self.env.reset()
+            total_reward = 0
+            for agent in self.env.agent_iter():
+                observation, reward, done, info = self.env.last()
+                action = self.get_action_of_agent(agent, observation, done)
+                self.env.step(action)
+                total_reward += reward
+                self.render()
+
+            print(f'finished episode {episode} with a total reward: {total_reward}')
+
+        self.env.close()
 
         for step in range(MAX_STEPS):
             self.validation_step(step)
@@ -95,17 +95,15 @@ class ALGModule:
                     for target_param, param in zip(self.critic_target_nets[i].parameters(), self.critic_nets[i].parameters()):
                         target_param.data.copy_(POLYAK * target_param.data + (1.0 - POLYAK) * param.data)
 
-                self.plot(
+                plotter.plot_online(
                     {
                         'actor_loss': actor_loss.item(),
                         'critic_loss_1': critic_losses[0].item(),
                         'critic_loss_2': critic_losses[1].item(),
                         'b_indx': b_indx,
                     }
-                    # {'rewards': rewards, 'values': values, 'ref_v': ref_v.numpy(),
-                    # 'loss': self.log_for_loss, 'lengths': lengths, 'adv_v': adv_v.numpy()}
                 )
-                self.neptune_update(loss=None)
+                plotter.neptune_update(loss=None)
 
     def get_y_targets(self, rewards, dones, next_states):
         means, stds = self.actor_net(next_states)
@@ -149,42 +147,19 @@ class ALGModule:
         self.actor_opt.step()
         return actor_loss
 
-    def validation_step(self, step):
-        if step % VAL_CHECKPOINT_INTERVAL == 0 and step > 0:
-            print(f'[VALIDATION STEP] Step: {step}')
-            play(1, self.actor_net)
+    def validation_step(self, episode):
+        if episode % VAL_CHECKPOINT_INTERVAL == 0 and episode > 0:
+            print(f'[VALIDATION STEP] Episode: {episode}')
+            play(1, self.actor_net_list)
 
     def configure_optimizers(self):
         pass
 
-    def plot(self, graph_dict):
-        # plot live:
-        if PLOT_LIVE:
-            def plot_graph(ax, indx, list_of_values, label, color='r'):
-                ax[indx].cla()
-                ax[indx].plot(list(range(len(list_of_values))), list_of_values, c=color)  # , edgecolor='b')
-                ax[indx].set_title(f'Plot: {label}')
-                ax[indx].set_xlabel('iters')
-                ax[indx].set_ylabel(f'{label}')
+    def get_action_of_agent(self, agent, observation, done):
+        agent_model = self.actor_net_list[agent]
+        action = agent_model(observation) if not done else None
+        return action
 
-            ax = self.fig.get_axes()
-            b_indx = graph_dict['b_indx']
-
-            self.actor_losses.append(graph_dict['actor_loss'])
-            self.critic_losses_1.append(graph_dict['critic_loss_1'])
-            self.critic_losses_2.append(graph_dict['critic_loss_2'])
-
-            # graphs
-            if b_indx % 9 == 0:
-                plot_graph(ax, 1, self.actor_losses, 'actor_loss')
-                plot_graph(ax, 2, self.critic_losses_1, 'critic_loss_1')
-                plot_graph(ax, 2, self.critic_losses_2, 'critic_loss_2')
-                # plot_graph(ax, 4, graph_dict['critic_w_mse'], 'critic_w_mse')
-
-                plt.pause(0.05)
-
-    @staticmethod
-    def neptune_update(loss):
-        if NEPTUNE:
-            run['acc_loss'].log(loss)
-            run['acc_loss_log'].log(f'{loss}')
+    def render(self):
+        if RENDER_WHILE_TRAINING:
+            self.env.render()

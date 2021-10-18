@@ -27,7 +27,7 @@ def fill_the_buffer(train_dataset, env, actor_net):
     env.close()
 
 
-def play(times: int = 1, model: nn.Module = None):
+def play(times: int = 1, models=None):
     with torch.no_grad():
         env = ENV
         observation = env.reset()
@@ -35,8 +35,8 @@ def play(times: int = 1, model: nn.Module = None):
         for game in range(times):
             for agent in env.agent_iter():
                 observation, reward, done, info = env.last()
-                if model:
-                    action = get_action(observation, model)
+                if models:
+                    action = get_action(observation, models)
                 else:
                     action = env.action_spaces[agent].sample()
                 action = action if not done else None

@@ -10,7 +10,6 @@ def train():
     # Initialization
 
     # ENV
-    env = gym.make(ENV)
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.shape[0]
 
@@ -30,17 +29,16 @@ def train():
     fill_the_buffer(train_dataset, env, actor_net)
     train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-    # Train
+    # Create module
     ALG_module_instance = ALGModule(
-        env,
-        critic_net_1,
-        critic_target_net_1,
-        critic_net_2,
-        critic_target_net_2,
-        actor_net,
+        ENV,
+        critic_nets,
+        critic_target_nets,
+        actor_nets,
         train_dataset,
         train_dataloader
     )
+    # Train
     ALG_module_instance.fit()
 
     # Save Results

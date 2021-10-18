@@ -26,11 +26,12 @@ from torch.utils.data import DataLoader, Dataset
 # from pytorch_lightning.callbacks import Callback
 # from pytorch_lightning import loggers as pl_loggers
 
+
 # ------------------------------------------- #
 # ------------------FOR ENV:----------------- #
 # ------------------------------------------- #
 from pettingzoo.mpe import simple_spread_v2
-ENV = simple_spread_v2.env(N=3, local_ratio=0.5, max_cycles=25)
+ENV = simple_spread_v2.env(N=3, local_ratio=0.5, max_cycles=25, continuous_actions=True)
 # ENV = 'LunarLanderContinuous-v2'
 # ENV='Pendulum-v0'
 # ENV = "BipedalWalker-v3"
@@ -45,6 +46,7 @@ PATH = 'actor_net.pt'
 NEPTUNE = False
 PLOT_LIVE = True
 # PLOT_LIVE = False
+RENDER_WHILE_TRAINING = False
 
 # ------------------------------------------- #
 # ------------------FOR ALG:----------------- #
@@ -55,6 +57,7 @@ PLOT_LIVE = True
 # REWARD_STEPS = 4
 # CLIP_GRAD = 0.1
 MAX_STEPS = 100000  # maximum epoch to execute
+M_EPISODES = 1000
 BATCH_SIZE = 64  # size of the batches
 LR_CRITIC = 3e-4  # learning rate
 LR_ACTOR = 3e-3  # learning rate
