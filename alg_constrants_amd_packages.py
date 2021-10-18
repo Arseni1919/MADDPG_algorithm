@@ -4,6 +4,7 @@
 import os
 import time
 from collections import namedtuple, deque
+from termcolor import colored
 
 import gym
 import pettingzoo
@@ -31,7 +32,9 @@ from torch.utils.data import DataLoader, Dataset
 # ------------------FOR ENV:----------------- #
 # ------------------------------------------- #
 from pettingzoo.mpe import simple_spread_v2
-ENV = simple_spread_v2.env(N=3, local_ratio=0.5, max_cycles=25, continuous_actions=True)
+MAX_CYCLES = 25
+# ENV = simple_spread_v2.env(N=3, local_ratio=0.5, max_cycles=MAX_CYCLES, continuous_actions=True)
+ENV = simple_spread_v2.parallel_env(N=3, local_ratio=0.5, max_cycles=MAX_CYCLES, continuous_actions=True)
 # ENV = 'LunarLanderContinuous-v2'
 # ENV='Pendulum-v0'
 # ENV = "BipedalWalker-v3"
@@ -56,7 +59,8 @@ RENDER_WHILE_TRAINING = False
 # ENTROPY_BETA = 0.001
 # REWARD_STEPS = 4
 # CLIP_GRAD = 0.1
-MAX_STEPS = 100000  # maximum epoch to execute
+
+MAX_STEPS = MAX_CYCLES * 100  # maximum epoch to execute
 M_EPISODES = 1000
 BATCH_SIZE = 64  # size of the batches
 LR_CRITIC = 3e-4  # learning rate

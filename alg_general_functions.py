@@ -1,3 +1,5 @@
+import pettingzoo
+
 from alg_constrants_amd_packages import *
 
 
@@ -28,24 +30,48 @@ def fill_the_buffer(train_dataset, env, actor_net):
 
 
 def play(times: int = 1, models=None):
-    with torch.no_grad():
-        env = ENV
-        observation = env.reset()
-        total_reward = 0
-        for game in range(times):
-            for agent in env.agent_iter():
-                observation, reward, done, info = env.last()
+    env = ENV
+
+    if isinstance(env, pettingzoo.ParallelEnv):
+        print('[Parallel Env]')
+        with torch.no_grad():
+            observations = env.reset()
+            total_reward, game = 0, 0
+            for step in range(times * MAX_CYCLES):
                 if models:
-                    action = get_action(observation, models)
+                    actions = get_action(observations, models)
                 else:
-                    action = env.action_spaces[agent].sample()
-                action = action if not done else None
-                env.step(action)
-                total_reward += reward
+                    actions = {agent: ENV.action_spaces[agent].sample() for agent in env.agents}
+                observations, rewards, dones, infos = ENV.step(actions)
+                # print(f'{env.agents}: {dones}, {rewards}, {observations}')
+                total_reward += sum(rewards.values())
+                if all(dones.values()):
+                    observations = env.reset()
+                    game += 1
+                    print(f'{colored("finished", "green")} game {game} with a total reward: {total_reward}')
+                    total_reward = 0
                 env.render()
-            observation = env.reset()
-            print(f'finished game {game} with a total reward: {total_reward}')
-            total_reward = 0
-        env.close()
+            env.close()
+
+    if isinstance(env, pettingzoo.AECEnv):
+        print('[AECEnv Env]')
+        with torch.no_grad():
+            for game in range(times):
+                env.reset()
+                total_reward = 0
+                for agent in env.agent_iter():
+                    observation, reward, done, info = env.last()
+                    if models:
+                        action = get_action(observation, models)
+                    else:
+                        action = env.action_spaces[agent].sample()
+                    action = action if not done else None
+                    env.step(action)
+                    total_reward += reward
+                    # print(f'{agent}: {done}, {reward}, {observation}')
+                    env.render()
+                print(f'{colored("finished", "green")} game {game} with a total reward: {total_reward}')
+                total_reward = 0
+            env.close()
 
 
