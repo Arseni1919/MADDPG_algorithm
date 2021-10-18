@@ -1,5 +1,21 @@
 from alg_constrants_amd_packages import *
-from alg_general_functions import *
+
+
+def get_action(env, agent, observation, done, model: nn.Module, step=0):
+    with torch.no_grad():
+        model_output = model.get_action(np.expand_dims(observation, axis=0))
+        model_output = torch.squeeze(model_output)
+        action = model_output.detach().numpy()
+        action = env.action_space(agent).sample() if not done else None
+        # noise = ACT_NOISE / np.log(step) if step > 5000 else ACT_NOISE
+        # action = action + np.random.normal(0, noise, 2)
+        # action = np.clip(action, -1, 1)
+        return action
+
+
+def get_actions(env, observations, dones, models):
+    return {agent: get_action(env, agent, observations[agent], dones[agent], models[agent]) for agent in env.agents}
+
 
 
 class ALGEnv_Module:
