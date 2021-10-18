@@ -1,9 +1,8 @@
-from alg_env_wrapper import *
+from alg_env_module import *
 
 
-env = ALGEnv_Wrapper(ENV)
+env = ALGEnv_Module(ENV)
 
 for i in range(10):
     print(i)
-    for step in env.run_episode(render=True):
-        pass
+    print(env.run_episode(render=True))

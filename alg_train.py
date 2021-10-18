@@ -3,21 +3,16 @@ from alg_general_functions import *
 from alg_nets import *
 from alg_data_module import *
 from alg_module import *
+from alg_env_module import env_module
 
 
 def train():
     # Initialization
-
-    # ENV
-    env =ENV
-    obs_size = env.observation_spaces.keys()[0]
-    n_actions = env.action_spaces.keys()[0]
-
     # NETS
     critic_net_dict, critic_target_net_dict, actor_net_dict = {}, {}, {}
-    for agent in env.agents:
+    for agent in env_module.env.agents:
 
-        obs_size, n_actions = env.observation_space(agent), env.action_space(agent)
+        obs_size, n_actions = env_module.env.observation_space(agent), env_module.env.action_space(agent)
 
         critic_net_i = CriticNet(obs_size, n_actions)
         critic_target_net_i = CriticNet(obs_size, n_actions)
@@ -30,11 +25,11 @@ def train():
 
     # REPLAY BUFFER
     datamodule = ALGDataModule()
-    datamodule.setup(env, actor_net_dict)
+    datamodule.setup(actor_net_dict)
 
     # Create module
     ALG_module_instance = ALGModule(
-        ENV,
+        env_module.env,
         critic_net_dict,
         critic_target_net_dict,
         actor_net_dict,

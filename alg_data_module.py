@@ -28,8 +28,8 @@ class ALGDataModule:
         # download
         pass
 
-    def setup(self, env, actor_net_dict):
-        self.fill_the_buffer(env, actor_net_dict)
+    def setup(self, actor_net_dict):
+        self.fill_the_buffer(actor_net_dict)
 
     def train_dataloader(self):
         if not self.filled_the_dataset:
@@ -42,26 +42,48 @@ class ALGDataModule:
     def test_dataloader(self):
         pass
 
-    def fill_the_buffer(self, env, actor_net_dict):
-        with torch.no_grad():
-            observations = env.reset()
-            dones = {agent: False for agent in env.agents}
-            while len(self.train_dataset) < UPDATE_AFTER:
-                actions = get_actions(env, observations, dones, actor_net_dict)
-                new_observations, rewards, dones, infos = ENV.step(actions)
-
-                # ADD TO EXPERIENCE BUFFER
-                experience = Experience(state=observations, action=actions, reward=rewards, done=dones,
-                                        new_state=new_observations)
+    def fill_the_buffer(self,  actor_net_dict):
+        while len(self.train_dataset) < UPDATE_AFTER:
+            for step in env_module.run_episode(models_dict=actor_net_dict):
+                experience, observations, actions, rewards, dones, new_observations = step
                 self.train_dataset.append(experience)
-                observations = new_observations
+        self.filled_the_dataset = True
 
-                if all(dones.values()):
-                    observations = self.env.reset()
-                    dones = {agent: False for agent in self.env.agents}
 
-            env.close()
-            self.filled_the_dataset = True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # with torch.no_grad():
+        #     observations = env.reset()
+        #     dones = {agent: False for agent in env.agents}
+        #     while len(self.train_dataset) < UPDATE_AFTER:
+        #         actions = get_actions(env, observations, dones, actor_net_dict)
+        #         new_observations, rewards, dones, infos = env.step(actions)
+        #
+        #         # ADD TO EXPERIENCE BUFFER
+        #         experience = Experience(state=observations, action=actions, reward=rewards, done=dones,
+        #                                 new_state=new_observations)
+        #         self.train_dataset.append(experience)
+        #         observations = new_observations
+        #
+        #         if all(dones.values()):
+        #             observations = self.env.reset()
+        #             dones = {agent: False for agent in self.env.agents}
+        #
+        #     env.close()
+        #     self.filled_the_dataset = True
 
 
 

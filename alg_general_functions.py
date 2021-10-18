@@ -1,6 +1,7 @@
 import pettingzoo
 
 from alg_constrants_amd_packages import *
+from alg_env_module import env_module
 
 
 def get_action(env, agent, observation, done, model: nn.Module, step=0):
@@ -18,51 +19,33 @@ def get_action(env, agent, observation, done, model: nn.Module, step=0):
 def get_actions(env, observations, dones, models):
     return {agent: get_action(env, agent, observations[agent], dones[agent], models[agent]) for agent in env.agents}
 
+
 def play(times: int = 1, models=None):
     env = ENV
 
     if isinstance(env, pettingzoo.ParallelEnv):
         print('[Parallel Env]')
-        with torch.no_grad():
-            observations = env.reset()
-            dones = {agent: False for agent in env.agents}
-            total_reward, game = 0, 0
-            for step in range(times * MAX_CYCLES):
-                if models:
-                    actions = get_actions(env, observations, dones, models)
-                else:
-                    actions = {agent: ENV.action_spaces[agent].sample() for agent in env.agents}
-                observations, rewards, dones, infos = ENV.step(actions)
-                # print(f'{env.agents}: {dones}, {rewards}, {observations}')
+        total_reward, game = 0, 0
+        for episode in range(times):
+            for step in env_module.run_episode(models_dict=models, render=True):
+                print('', end='')
+                experience, observations, actions, rewards, dones, new_observations = step
                 total_reward += sum(rewards.values())
-                if all(dones.values()):
-                    observations = env.reset()
-                    dones = {agent: False for agent in env.agents}
-                    game += 1
-                    print(f'{colored("finished", "green")} game {game} with a total reward: {total_reward}')
-                    total_reward = 0
-                env.render()
-            env.close()
+
+            game += 1
+            print(f'{colored("finished", "green")} game {game} with a total reward: {total_reward}')
+            total_reward = 0
 
     if isinstance(env, pettingzoo.AECEnv):
         print('[AECEnv Env]')
-        with torch.no_grad():
-            for game in range(times):
-                env.reset()
-                total_reward = 0
-                for agent in env.agent_iter():
-                    observation, reward, done, info = env.last()
-                    if models:
-                        action = get_action(env, agent, observation, done, models[agent])
-                    else:
-                        action = env.action_spaces[agent].sample()
-                    action = action if not done else None
-                    env.step(action)
-                    total_reward += reward
-                    # print(f'{agent}: {done}, {reward}, {observation}')
-                    env.render()
-                print(f'{colored("finished", "green")} game {game} with a total reward: {total_reward}')
-                total_reward = 0
-            env.close()
+        total_reward, game = 0, 0
+        for episode in range(times):
+            for step in env_module.run_episode_seq(models_dict=models, render=True):
+                agent, observation, action, reward, done = step
+                total_reward += reward
+            game += 1
+            print(f'{colored("finished", "green")} game {game} with a total reward: {total_reward}')
+            total_reward = 0
+
 
 

@@ -1,6 +1,5 @@
 from alg_constrants_amd_packages import *
 from alg_general_functions import *
-from alg_memory import ALGDataset
 from alg_nets import ActorNet, CriticNet
 from alg_plotter import plotter
 
@@ -36,37 +35,25 @@ class ALGModule:
     def fit_parallel_env(self, dm):
 
         # FIRST INIT
-        observations = self.env.reset()
-        dones = {agent: False for agent in self.env.agents}
-        total_reward, episode = 0, 0
+        total_reward = 0
 
-        for step in range(M_EPISODES * MAX_CYCLES):
+        for episode in range(M_EPISODES):
 
             # CHOOSE AN ACTION AND MAKE A STEP
-            actions = {agent: self.get_action_of_agent(agent, observations[agent], dones[agent]) for agent in self.env.agents}
-            new_observations, rewards, dones, infos = self.env.step(actions)
-            total_reward += sum(rewards.values())
+            for step in env_module.run_episode(models_dict=self.actor_net_dict, render=True):
+                experience, observations, actions, rewards, dones, new_observations = step
+                total_reward += sum(rewards.values())
 
-            # ADD TO EXPERIENCE BUFFER
-            experience = Experience(state=observations, action=actions, reward=rewards, done=dones, new_state=new_observations)
-            dm.train_dataset.append(experience)
-            observations = new_observations
+                # ADD TO EXPERIENCE BUFFER
+                dm.train_dataset.append(experience)
 
-            if all(dones.values()):
-                # END OF AN EPISODE
-                episode += 1
-                print(f'{colored("finished", "green")} episode {episode} with a total reward: {total_reward}')
+                # TRAINING STEP
+                self.training_step(step)
 
-                # FOLLOWING INIT AND VALIDATION STEP
-                total_reward = 0
-                observations = self.env.reset()
-                dones = {agent: False for agent in self.env.agents}
-                self.validation_step(episode)
-
-            # TRAINING STEP
-            self.training_step(step)
-
-        self.env.close()
+            # END OF AN EPISODE
+            print(f'{colored("finished", "green")} episode {episode} with a total reward: {total_reward}')
+            total_reward = 0
+            self.validation_step(episode)
 
     def training_step(self, step):
         # if step % UPDATE_EVERY == 0:
@@ -180,25 +167,62 @@ class ALGModule:
 
     def fit_sequential_env(self):
         # random process -> torch.normal(mean=torch.tensor(10.0), std=torch.tensor(10.0))
-        for episode in range(M_EPISODES):
-            self.validation_step(episode)
-            self.env.reset()
-            total_reward = 0
-            for agent in self.env.agent_iter():
-                observation, reward, done, info = self.env.last()
-                action = self.get_action_of_agent(agent, observation, done)
-                self.env.step(action)
-                total_reward += reward
-                # self.render_env()
+        # for episode in range(M_EPISODES):
+        #     self.validation_step(episode)
+        #     self.env.reset()
+        #     total_reward = 0
+        #     for agent in self.env.agent_iter():
+        #         observation, reward, done, info = self.env.last()
+        #         action = self.get_action_of_agent(agent, observation, done)
+        #         self.env.step(action)
+        #         total_reward += reward
+        #         # self.render_env()
+        #
+        #         # TODO
+        #         experience = Experience(state=observation, action=action, reward=reward, done=done, new_state=observation) # !!!!!!!!!!!
+        #         self.train_dataset.append(experience)
+        #
+        #         # TODO
+        #         self.training_step(agent)
+        #
+        #     print(f'finished episode {episode} with a total reward: {total_reward}')
+        #
+        # self.env.close()
+        pass
 
-                # TODO
-                experience = Experience(state=observation, action=action, reward=reward, done=done, new_state=observation) # !!!!!!!!!!!
-                self.train_dataset.append(experience)
 
-                # TODO
-                self.training_step(agent)
 
-            print(f'finished episode {episode} with a total reward: {total_reward}')
 
-        self.env.close()
+# # FIRST INIT
+        # observations = self.env.reset()
+        # dones = {agent: False for agent in self.env.agents}
+        # total_reward, episode = 0, 0
+        #
+        # for step in range(M_EPISODES * MAX_CYCLES):
+        #
+        #     # CHOOSE AN ACTION AND MAKE A STEP
+        #     actions = {agent: self.get_action_of_agent(agent, observations[agent], dones[agent]) for agent in self.env.agents}
+        #     new_observations, rewards, dones, infos = self.env.step(actions)
+        #     total_reward += sum(rewards.values())
+        #
+        #     # ADD TO EXPERIENCE BUFFER
+        #     experience = Experience(state=observations, action=actions, reward=rewards, done=dones, new_state=new_observations)
+        #     dm.train_dataset.append(experience)
+        #     observations = new_observations
+        #
+        #     if all(dones.values()):
+        #         # END OF AN EPISODE
+        #         episode += 1
+        #         print(f'{colored("finished", "green")} episode {episode} with a total reward: {total_reward}')
+        #
+        #         # FOLLOWING INIT AND VALIDATION STEP
+        #         total_reward = 0
+        #         observations = self.env.reset()
+        #         dones = {agent: False for agent in self.env.agents}
+        #         self.validation_step(episode)
+        #
+        #     # TRAINING STEP
+        #     self.training_step(step)
+        #
+        # self.env.close()
 
