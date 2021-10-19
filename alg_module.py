@@ -19,20 +19,22 @@ class ALGModule:
         self.actor_net_dict = actor_net_dict
 
         # create optimizers
-        self.critic_opts = [torch.optim.Adam(net.parameters(), lr=LR_CRITIC) for net in self.critic_net_dict]
-        self.actor_opts = [torch.optim.Adam(net.parameters(), lr=LR_ACTOR) for net in self.actor_net_dict]
+        self.critic_opts_dict = {agent: torch.optim.Adam(net.parameters(), lr=LR_CRITIC) for agent, net in self.critic_net_dict.items()}
+        self.actor_opts_dict = {agent: torch.optim.Adam(net.parameters(), lr=LR_ACTOR) for agent, net in self.actor_net_dict.items()}
+        plotter.info("ALGModule instance created.")
 
     def fit(self, dm):
         if isinstance(self.env, pettingzoo.ParallelEnv):
-            print('[Parallel Env]')
+            plotter.debug("Inside the Parallel Env.")
             self.fit_parallel_env(dm)
         elif isinstance(self.env, pettingzoo.AECEnv):
-            print('[AECEnv Env]')
+            plotter.debug("Inside the AECEnv Env.")
             self.fit_sequential_env()
         else:
-            raise RuntimeError('[ERROR]: The instance of env is unknown.')
+            plotter.error("The instance of env is unknown.")
 
     def fit_parallel_env(self, dm):
+        plotter.info("Beginning to fit the env...")
 
         # FIRST INIT
         total_reward = 0
@@ -40,7 +42,7 @@ class ALGModule:
         for episode in range(M_EPISODES):
 
             # CHOOSE AN ACTION AND MAKE A STEP
-            for step in env_module.run_episode(models_dict=self.actor_net_dict, render=True):
+            for step in env_module.run_episode(models_dict=self.actor_net_dict, render=False):
                 experience, observations, actions, rewards, dones, new_observations = step
                 total_reward += sum(rewards.values())
 
@@ -51,13 +53,14 @@ class ALGModule:
                 self.training_step(step)
 
             # END OF AN EPISODE
-            print(f'{colored("finished", "green")} episode {episode} with a total reward: {total_reward}')
+            # plotter.debug(f"Finished episode {episode} with a total reward: {colored(f'{total_reward}', 'magenta')}.")
             total_reward = 0
             self.validation_step(episode)
+        plotter.info("Finished to fit the env.")
 
     def training_step(self, step):
         # if step % UPDATE_EVERY == 0:
-        #     print(f'[TRAINING STEP] Step: {step}')
+        #     plotter.debug(f"TRAINING STEP (Step {step})")
         #
         #     list_of_batches = list(self.train_dataloader)
         #     n_batches_to_iterate = min(len(list_of_batches), BATCHES_IN_TRAINING_STEP)
@@ -145,8 +148,8 @@ class ALGModule:
 
     def validation_step(self, episode):
         if episode % VAL_CHECKPOINT_INTERVAL == 0 and episode > 0:
-            print(f'[VALIDATION STEP] Episode: {episode}')
-            # play(1, self.actor_net_list)
+            plotter.debug(f"VALIDATION STEP (episode {episode})")
+            play(1, self.actor_net_dict, print_info=False)
 
     def configure_optimizers(self):
         pass

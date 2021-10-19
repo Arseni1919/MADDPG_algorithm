@@ -1,6 +1,6 @@
 from alg_constrants_amd_packages import *
 from alg_general_functions import *
-
+from alg_plotter import plotter
 
 class ALGDataset(Dataset):
     def __init__(self):
@@ -23,6 +23,7 @@ class ALGDataModule:
         self.batch_size = batch_size
         self.train_dataset = ALGDataset()
         self.filled_the_dataset = False
+        plotter.info("ALGDataModule instance created.")
 
     def prepare_data(self):
         # download
@@ -33,7 +34,7 @@ class ALGDataModule:
 
     def train_dataloader(self):
         if not self.filled_the_dataset:
-            raise RuntimeError("[ERROR]: Didn't fill the dataset.")
+            plotter.error("Didn't fill the dataset.")
         return DataLoader(self.train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
     def val_dataloader(self):
@@ -47,6 +48,7 @@ class ALGDataModule:
             for step in env_module.run_episode(models_dict=actor_net_dict):
                 experience, observations, actions, rewards, dones, new_observations = step
                 self.train_dataset.append(experience)
+        plotter.info("Filled the dataset.")
         self.filled_the_dataset = True
 
 

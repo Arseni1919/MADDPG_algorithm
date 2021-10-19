@@ -1,5 +1,5 @@
 from alg_constrants_amd_packages import *
-
+from alg_plotter import plotter
 
 def get_action(env, agent, observation, done, model: nn.Module, step=0):
     with torch.no_grad():
@@ -21,6 +21,20 @@ def get_actions(env, observations, dones, models):
 class ALGEnv_Module:
     def __init__(self, env):
         self.env = env
+        plotter.info("ALGEnv_Module instance created.")
+
+    def get_agent_list(self):
+        return self.env.unwrapped.agents
+
+    def observation_space_shape(self, agent):
+        # obs_size, n_actions = env_module.env.observation_space(agent), env_module.env.action_space(agent)
+        obs_size = self.env.observation_space(agent)
+
+        return torch.tensor(obs_size.shape)
+
+    def action_space_shape(self, agent):
+        n_actions = self.env.action_space(agent)
+        return torch.tensor(n_actions.shape)
 
     def run_episode(self, models_dict=None, render=False, no_grad=True):
 

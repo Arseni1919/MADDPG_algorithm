@@ -8,3 +8,4 @@ env
 lightning_logs
 .ckpt
 example.ckpt
+actor_net.pt

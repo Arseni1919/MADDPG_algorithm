@@ -3,6 +3,7 @@
 # ------------------------------------------- #
 import os
 import time
+import logging
 from collections import namedtuple, deque
 from termcolor import colored
 
@@ -62,14 +63,14 @@ RENDER_WHILE_TRAINING = False
 # CLIP_GRAD = 0.1
 
 MAX_STEPS = MAX_CYCLES * 100  # maximum epoch to execute
-M_EPISODES = 1000
+M_EPISODES = 20
 BATCH_SIZE = 64  # size of the batches
 LR_CRITIC = 3e-4  # learning rate
 LR_ACTOR = 3e-3  # learning rate
 GAMMA = 0.99  # discount factor
 ACT_NOISE = 0.5  # actuator noise
 POLYAK = 0.999
-VAL_CHECKPOINT_INTERVAL = 250
+VAL_CHECKPOINT_INTERVAL = 5
 REPLAY_BUFFER_SIZE = 1000000
 UPDATE_AFTER = 5000
 UPDATE_EVERY = 50

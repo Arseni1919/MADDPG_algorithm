@@ -10,9 +10,9 @@ def train():
     # Initialization
     # NETS
     critic_net_dict, critic_target_net_dict, actor_net_dict = {}, {}, {}
-    for agent in env_module.env.agents:
+    for agent in env_module.get_agent_list():
 
-        obs_size, n_actions = env_module.env.observation_space(agent), env_module.env.action_space(agent)
+        obs_size, n_actions = env_module.observation_space_shape(agent), env_module.action_space_shape(agent)
 
         critic_net_i = CriticNet(obs_size, n_actions)
         critic_target_net_i = CriticNet(obs_size, n_actions)
@@ -41,11 +41,12 @@ def train():
 
     # Save Results
     if SAVE_RESULTS:
-        torch.save(actor_net, 'actor_net.pt')
+        torch.save(list(actor_net_dict.values())[0], 'actor_net.pt')
         # example runs
         model = torch.load('actor_net.pt')
         model.eval()
-        play(10, model=model)
+        models_dict = {agent: model for agent in env_module.get_agent_list()}
+        play(10, models_dict=models_dict)
 
 
 if __name__ == '__main__':

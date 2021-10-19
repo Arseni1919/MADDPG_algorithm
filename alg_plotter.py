@@ -1,9 +1,19 @@
 from alg_constrants_amd_packages import *
-
+import logging
+"""
+logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG)
+logging.debug('This message should go to the log file')
+logging.info('So should this')
+logging.warning('And this, too')
+logging.error('And non-ASCII stuff, too, like Øresund and Malmö')
+"""
 
 
 
 class ALGPlotter:
+    """
+    This object is responsible for plotting, logging and neptune updating.
+    """
     def __init__(self):
         if PLOT_LIVE:
             self.fig, _ = plt.subplots(nrows=2, ncols=3, figsize=(12, 6))
@@ -11,21 +21,9 @@ class ALGPlotter:
             self.critic_losses_1 = []
             self.critic_losses_2 = []
 
-        if NEPTUNE:
-            self.run = neptune.init(project='1919ars/PL-implementations',
-                               tags=['MADDPG'],
-                               name=f'MADDPG_{time.asctime()}',
-                               source_files=['alg_constrants_amd_packages.py'])
-            # Neptune.ai Logger
-            PARAMS = {
-                'GAMMA': GAMMA,
-                # 'LR': LR,
-                # 'CLIP_GRAD': CLIP_GRAD,
-                'MAX_STEPS': MAX_STEPS,
-            }
-            run['parameters'] = PARAMS
-        else:
-            self.run = {}
+        self.neptune_init()
+        self.logging_init()
+        self.info("ALGPlotter instance created.")
 
     def plot_online(self, graph_dict):
         # plot live:
@@ -56,10 +54,56 @@ class ALGPlotter:
     def plot_summary(self):
         pass
 
+    def neptune_init(self):
+        if NEPTUNE:
+            self.run = neptune.init(project='1919ars/PL-implementations',
+                                    tags=['MADDPG'],
+                                    name=f'MADDPG_{time.asctime()}',
+                                    source_files=['alg_constrants_amd_packages.py'])
+            # Neptune.ai Logger
+            PARAMS = {
+                'GAMMA': GAMMA,
+                # 'LR': LR,
+                # 'CLIP_GRAD': CLIP_GRAD,
+                'MAX_STEPS': MAX_STEPS,
+            }
+            self.run['parameters'] = PARAMS
+        else:
+            self.run = {}
+
     def neptune_update(self, loss):
         if NEPTUNE:
             self.run['acc_loss'].log(loss)
             self.run['acc_loss_log'].log(f'{loss}')
+
+    @staticmethod
+    def logging_init():
+        # logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG)
+        # logging.basicConfig(level=logging.DEBUG)
+        pass
+
+    def info(self, message, print_info=True):
+        # logging.info('So should this')
+        if print_info:
+            print(colored(f'[INFO]: {message}', 'green'))
+
+    def debug(self, message, print_info=True):
+        # logging.debug('This message should go to the log file')
+        if print_info:
+            print(colored(f'[DEBUG]: {message}', 'cyan'))
+
+    def warning(self, message, print_info=True):
+        # logging.warning('And this, too')
+        if print_info:
+            print(colored(f'[WARNING]: {message}', 'yellow'))
+
+    def error(self, message):
+        # logging.error('And non-ASCII stuff, too, like Øresund and Malmö')
+        raise RuntimeError(f"[ERROR]: {message}")
+
+
+
+
 
 
 plotter = ALGPlotter()
