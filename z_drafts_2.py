@@ -12,7 +12,7 @@ plotter.error("Perfect!!!! Vey good:)")
 # logging.error('And non-ASCII stuff, too, like Øresund and Malmö')
 
 
-env = ALGEnv_Module(ENV)
+env = ALGEnvModule(ENV)
 
 for i in range(10):
     print(i)

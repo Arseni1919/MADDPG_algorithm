@@ -85,21 +85,21 @@ class ALGPlotter:
     def info(self, message, print_info=True):
         # logging.info('So should this')
         if print_info:
-            print(colored(f'[INFO]: {message}', 'green'))
+            print(colored(f'~[INFO]: {message}', 'green'))
 
     def debug(self, message, print_info=True):
         # logging.debug('This message should go to the log file')
         if print_info:
-            print(colored(f'[DEBUG]: {message}', 'cyan'))
+            print(colored(f'~[DEBUG]: {message}', 'cyan'))
 
     def warning(self, message, print_info=True):
         # logging.warning('And this, too')
         if print_info:
-            print(colored(f'[WARNING]: {message}', 'yellow'))
+            print(colored(f'~[WARNING]: {message}', 'yellow'))
 
     def error(self, message):
         # logging.error('And non-ASCII stuff, too, like Øresund and Malmö')
-        raise RuntimeError(f"[ERROR]: {message}")
+        raise RuntimeError(f"~[ERROR]: {message}")
 
 
 

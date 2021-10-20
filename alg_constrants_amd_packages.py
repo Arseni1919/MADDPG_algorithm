@@ -45,7 +45,7 @@ ENV = simple_spread_v2.parallel_env(N=3, local_ratio=0.5, max_cycles=MAX_CYCLES,
 NUMBER_OF_GAMES = 10
 SAVE_RESULTS = True
 # SAVE_RESULTS = False
-PATH = 'actor_net.pt'
+PATH = 'data/actor_net.pt'
 
 # NEPTUNE = True
 NEPTUNE = False
@@ -65,13 +65,14 @@ RENDER_WHILE_TRAINING = False
 MAX_STEPS = MAX_CYCLES * 100  # maximum epoch to execute
 M_EPISODES = 20
 BATCH_SIZE = 64  # size of the batches
+BATCHES_PER_TRAINING_STEP = 3
 LR_CRITIC = 3e-4  # learning rate
 LR_ACTOR = 3e-3  # learning rate
 GAMMA = 0.99  # discount factor
 ACT_NOISE = 0.5  # actuator noise
 POLYAK = 0.999
 VAL_CHECKPOINT_INTERVAL = 5
-REPLAY_BUFFER_SIZE = 1000000
+REPLAY_BUFFER_SIZE = 10000
 UPDATE_AFTER = 5000
 UPDATE_EVERY = 50
 HIDDEN_SIZE = 256

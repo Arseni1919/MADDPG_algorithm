@@ -4,7 +4,8 @@ from alg_constrants_amd_packages import *
 from alg_env_module import env_module
 from alg_plotter import plotter
 
-def play(times: int = 1, models_dict=None, print_info=True):
+
+def play(times: int = 1, models_dict=None, print_info=True, noisy_action=False):
     env = ENV
     plotter.info(f"Playing the game {times} times...", print_info)
 
@@ -12,7 +13,7 @@ def play(times: int = 1, models_dict=None, print_info=True):
         plotter.debug("Inside the Parallel Env.", print_info)
         total_reward, game = 0, 0
         for episode in range(times):
-            for step in env_module.run_episode(models_dict=models_dict, render=True):
+            for step in env_module.run_episode(models_dict=models_dict, render=True, noisy_action=noisy_action):
                 print('', end='')
                 experience, observations, actions, rewards, dones, new_observations = step
                 total_reward += sum(rewards.values())

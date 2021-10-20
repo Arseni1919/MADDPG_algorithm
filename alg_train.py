@@ -41,7 +41,7 @@ def train():
 
     # Save Results
     if SAVE_RESULTS:
-        torch.save(list(actor_net_dict.values())[0], 'actor_net.pt')
+        torch.save(list(actor_net_dict.values())[0], 'data/actor_net.pt')
         # example runs
         model = torch.load('actor_net.pt')
         model.eval()

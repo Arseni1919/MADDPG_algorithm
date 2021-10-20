@@ -1,6 +1,5 @@
 from alg_constrants_amd_packages import *
 
-
 class ActorNet(nn.Module):
     """
     obs_size: observation/state size of the environment
@@ -15,15 +14,8 @@ class ActorNet(nn.Module):
             nn.ReLU(),
             nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
             nn.ReLU(),
-        )
-
-        self.mean_head = nn.Sequential(
             nn.Linear(HIDDEN_SIZE, n_actions),
-        )
-
-        self.std_head = nn.Sequential(
-            nn.Linear(HIDDEN_SIZE, n_actions),
-            nn.Softplus()
+            nn.Tanh()
         )
 
         self.n_actions = n_actions
@@ -35,21 +27,8 @@ class ActorNet(nn.Module):
             state = Variable(torch.from_numpy(state).float().unsqueeze(0))
         state = state.float()
         value = self.net(state)
-        value = value.float()
-        mean = self.mean_head(value)
-        std = self.std_head(value)
-        return mean, std
 
-    @torch.no_grad()
-    def get_action(self, state):
-        mean, std = self(state)
-        mean = torch.squeeze(mean)
-        std = torch.squeeze(std)
-        normal_dist = Normal(loc=mean, scale=std)
-        action = torch.tanh(normal_dist.sample())
-        action = action.float().detach()
-        # log_policy_a_s = normal_dist.log_prob(action) - torch.sum(torch.log(1 - action.pow(2)))
-        return action
+        return value
 
 
 class CriticNet(nn.Module):
@@ -66,10 +45,14 @@ class CriticNet(nn.Module):
             nn.ReLU(),
             nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
             nn.ReLU(),
+            nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
+            nn.ReLU(),
         )
 
         self.out_net = nn.Sequential(
             nn.Linear(HIDDEN_SIZE + n_actions, HIDDEN_SIZE),
+            nn.ReLU(),
+            nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
             nn.ReLU(),
             nn.Linear(HIDDEN_SIZE, 1),
         )
@@ -84,7 +67,6 @@ class CriticNet(nn.Module):
         state = state.float()
         obs = self.obs_net(state)
         value = self.out_net(torch.cat([obs, action], dim=1))
-        value = value.float()
 
         return value
 
