@@ -2,44 +2,49 @@ from alg_constrants_amd_packages import *
 from alg_plotter import plotter
 
 
-def get_action(env, agent, observation, done, model: nn.Module, step=0, noisy_action=True):
-    with torch.no_grad():
-
-        # AGENT OUT OF A GAME
-        if done:
-            return None
-
-        # GETS THE ACTION
-        observation = Variable(torch.from_numpy(np.expand_dims(observation, axis=0)).float().unsqueeze(0))
-        model_output = model(observation)
-        model_output = torch.squeeze(model_output)
-        action = model_output.float().detach().numpy()
-
-        # IF NO NEED TO ADD SOME RANDOM NOISE
-        if noisy_action:
-            # ADDS NOISE
-            #           (1) random process -> torch.normal(mean=torch.tensor(10.0), std=torch.tensor(10.0))
-            #           (2) m = Normal(torch.tensor([0.0]), torch.tensor([1.0])) -> m.sample()
-            updated_action = action + torch.normal(mean=torch.tensor(0.0), std=torch.tensor(0.3)).item()
-        else:
-            updated_action = action
-
-        clipped_action = np.clip(updated_action, 0, 1)
-
-        return clipped_action
 
 
-def get_actions(env, observations, dones, models, noisy_action=True):
-    return {
-        agent: get_action(env, agent, observations[agent], dones[agent], models[agent], noisy_action=noisy_action)
-        for agent in env.agents
-    }
+
+
 
 
 class ALGEnvModule:
     def __init__(self, env):
         self.env = env
         plotter.info("ALGEnvModule instance created.")
+
+    @staticmethod
+    def get_action(observation, done, model: nn.Module, noisy_action=True):
+        with torch.no_grad():
+
+            # AGENT OUT OF A GAME
+            if done:
+                return None
+
+            # GETS THE ACTION
+            observation = Variable(torch.from_numpy(np.expand_dims(observation, axis=0)).float().unsqueeze(0))
+            model_output = model(observation)
+            model_output = torch.squeeze(model_output)
+            action = model_output.float().detach().numpy()
+
+            # IF NO NEED TO ADD SOME RANDOM NOISE
+            if noisy_action:
+                # ADDS NOISE
+                #           (1) random process -> torch.normal(mean=torch.tensor(10.0), std=torch.tensor(10.0))
+                #           (2) m = Normal(torch.tensor([0.0]), torch.tensor([1.0])) -> m.sample()
+                updated_action = action + torch.normal(mean=torch.tensor(0.0), std=torch.tensor(0.3)).item()
+            else:
+                updated_action = action
+
+            clipped_action = np.clip(updated_action, 0, 1)
+
+            return clipped_action
+
+    def get_actions(self, env, observations, dones, models, noisy_action=True):
+        return {
+            agent: self.get_action(observations[agent], dones[agent], models[agent], noisy_action=noisy_action)
+            for agent in env.agents
+        }
 
     def get_agent_list(self):
         return self.env.unwrapped.agents
@@ -66,7 +71,7 @@ class ALGEnvModule:
 
                 # CHOOSES ACTIONS
                 if models_dict:
-                    actions = get_actions(self.env, observations, dones, models_dict, noisy_action=noisy_action)
+                    actions = self.get_actions(self.env, observations, dones, models_dict, noisy_action=noisy_action)
                 else:
                     actions = {agent: ENV.action_spaces[agent].sample() for agent in self.env.agents}
 

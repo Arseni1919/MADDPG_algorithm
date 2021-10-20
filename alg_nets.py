@@ -1,5 +1,6 @@
 from alg_constrants_amd_packages import *
 
+
 class ActorNet(nn.Module):
     """
     obs_size: observation/state size of the environment
@@ -37,11 +38,11 @@ class CriticNet(nn.Module):
     n_actions: number of discrete actions available in the environment
     # hidden_size: size of hidden layers
     """
-    def __init__(self, obs_size: int, n_actions: int):
+    def __init__(self, obs_size: int, n_actions: int, n_agents: int):
         super(CriticNet, self).__init__()
 
         self.obs_net = nn.Sequential(
-            nn.Linear(obs_size, HIDDEN_SIZE),
+            nn.Linear(obs_size * n_agents + n_actions * n_agents, HIDDEN_SIZE),
             nn.ReLU(),
             nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
             nn.ReLU(),
@@ -59,6 +60,7 @@ class CriticNet(nn.Module):
 
         self.n_actions = n_actions
         self.obs_size = obs_size
+        self.n_agents = n_agents
         self.entropy_term = 0
 
     def forward(self, state, action):

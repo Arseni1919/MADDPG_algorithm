@@ -9,19 +9,23 @@ from alg_env_module import env_module
 def train():
     # Initialization
     # NETS
-    critic_net_dict, critic_target_net_dict, actor_net_dict = {}, {}, {}
+    critic_net_dict, critic_target_net_dict, actor_net_dict, actor_target_net_dict = {}, {}, {}, {}
     for agent in env_module.get_agent_list():
 
         obs_size, n_actions = env_module.observation_space_shape(agent), env_module.action_space_shape(agent)
+        n_agents = len(env_module.get_agent_list())
 
-        critic_net_i = CriticNet(obs_size, n_actions)
-        critic_target_net_i = CriticNet(obs_size, n_actions)
+        critic_net_i = CriticNet(obs_size, n_actions, n_agents)
+        critic_target_net_i = CriticNet(obs_size, n_actions, n_agents)
         critic_target_net_i.load_state_dict(critic_net_i.state_dict())
-        actor_net = ActorNet(obs_size, n_actions)
+        actor_net_i = ActorNet(obs_size, n_actions)
+        actor_target_net_i = ActorNet(obs_size, n_actions)
+        actor_target_net_i.load_state_dict(actor_net_i.state_dict())
 
         critic_net_dict[agent] = critic_net_i
         critic_target_net_dict[agent] = critic_target_net_i
-        actor_net_dict[agent] = actor_net
+        actor_net_dict[agent] = actor_net_i
+        actor_target_net_dict[agent] = actor_target_net_i
 
     # REPLAY BUFFER
     datamodule = ALGDataModule()
@@ -33,6 +37,7 @@ def train():
         critic_net_dict,
         critic_target_net_dict,
         actor_net_dict,
+        actor_target_net_dict,
     )
 
     # Train
