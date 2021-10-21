@@ -24,9 +24,9 @@
 ### MADDPG:
 
 - [`simple_spread` environment](https://www.pettingzoo.ml/mpe/simple_spread)
-- [LIGHTNINGDATAMODULE](https://pytorch-lightning.readthedocs.io/en/latest/extensions/datamodules.html#datamodules)
 - [GitHub | MADDPG implementation of `starry-sky6688`](https://github.com/starry-sky6688/MADDPG/blob/master/maddpg/maddpg.py)
-- []()
+- [PyTorch Lightning | LIGHTNINGDATAMODULE](https://pytorch-lightning.readthedocs.io/en/latest/extensions/datamodules.html#datamodules)
+- [PyTorch Lightning | MANAGING DATA](https://pytorch-lightning.readthedocs.io/en/latest/guides/data.html)
 - []()
 
 ### DDPG:
