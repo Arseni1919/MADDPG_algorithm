@@ -80,21 +80,21 @@ class ALGModule:
                 observations, actions, rewards, dones, new_observations = batch
 
                 # FOR LOOP - AGENTS
-                for agent in env_module.get_agent_list():
-                    observation = observations[agent]
-                    action = actions[agent]
-                    reward = rewards[agent]
-                    done = dones[agent]
-                    new_observation = new_observations[agent]
+                for curr_agent in env_module.get_agent_list():
+                    observation = observations[curr_agent]
+                    action = actions[curr_agent]
+                    reward = rewards[curr_agent]
+                    done = dones[curr_agent]
+                    new_observation = new_observations[curr_agent]
 
                     # COMPUTES TARGETS
-                    y = self.get_y_targets(agent, reward, done, rewards, new_observations)
+                    y = self.get_y_targets(curr_agent, reward, done, rewards, new_observations)
 
                     # UPDATES CRITIC
-                    self.update_agent_critic(agent, y, observations, actions)
+                    self.update_agent_critic(curr_agent, y, observations, actions)
 
                     # UPDATES ACTOR
-                    self.update_agent_actor(agent, done, observations, actions )
+                    self.update_agent_actor(curr_agent, done, observations, actions )
 
                 # UPDATES TARGET NETWORK PARAMETERS
                 self.update_target_net_params()

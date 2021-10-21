@@ -2,19 +2,13 @@ from alg_constrants_amd_packages import *
 from alg_plotter import plotter
 
 
-
-
-
-
-
-
 class ALGEnvModule:
-    def __init__(self, env):
+    def __init__(self, env, noise_std=.3):
         self.env = env
+        self.noise_std = noise_std
         plotter.info("ALGEnvModule instance created.")
 
-    @staticmethod
-    def get_action(observation, done, model: nn.Module, noisy_action=True):
+    def get_action(self, observation, done, model: nn.Module, noisy_action=True):
         with torch.no_grad():
 
             # AGENT OUT OF A GAME
@@ -32,11 +26,9 @@ class ALGEnvModule:
                 # ADDS NOISE
                 #           (1) random process -> torch.normal(mean=torch.tensor(10.0), std=torch.tensor(10.0))
                 #           (2) m = Normal(torch.tensor([0.0]), torch.tensor([1.0])) -> m.sample()
-                updated_action = action + torch.normal(mean=torch.tensor(0.0), std=torch.tensor(0.3)).item()
-            else:
-                updated_action = action
+                action += torch.normal(mean=torch.tensor(0.0), std=torch.tensor(self.noise_std)).item()
 
-            clipped_action = np.clip(updated_action, 0, 1)
+            clipped_action = np.clip(action, 0, 1)
 
             return clipped_action
 
@@ -119,6 +111,6 @@ class ALGEnvModule:
         pass
 
 
-env_module = ALGEnvModule(ENV)
+env_module = ALGEnvModule(ENV, noise_std=ACT_NOISE)
 
 
