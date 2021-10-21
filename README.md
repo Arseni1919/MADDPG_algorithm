@@ -27,6 +27,10 @@
 - [GitHub | MADDPG implementation of `starry-sky6688`](https://github.com/starry-sky6688/MADDPG/blob/master/maddpg/maddpg.py)
 - [PyTorch Lightning | LIGHTNINGDATAMODULE](https://pytorch-lightning.readthedocs.io/en/latest/extensions/datamodules.html#datamodules)
 - [PyTorch Lightning | MANAGING DATA](https://pytorch-lightning.readthedocs.io/en/latest/guides/data.html)
+- [RealPython | How to Use Generators and yield in Python](https://realpython.com/introduction-to-python-generators/)
+- []()
+- []()
+- []()
 - []()
 
 ### DDPG:
@@ -40,8 +44,8 @@
 - [1 - Deep Deterministic Policy Gradient (DDPG): Theory and Implementation | Medium](https://towardsdatascience.com/deep-deterministic-policy-gradient-ddpg-theory-and-implementation-747a3010e82f)
 - [2 - DDPG implementation | Medium](https://towardsdatascience.com/deep-deterministic-policy-gradients-explained-2d94655a9b7b)
 - [Policy Gradient Algorithms | Lilian Weng's Blog](https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html)
-- [DATASETS & DATALOADERS | PyTorch](https://pytorch.org/tutorials/beginner/basics/data_tutorial.html)
-- [SAVING AND LOADING MODELS | PyTorch](https://pytorch.org/tutorials/beginner/saving_loading_models.html)
+- [PyTorch | DATASETS & DATALOADERS](https://pytorch.org/tutorials/beginner/basics/data_tutorial.html)
+- [PyTorch | SAVING AND LOADING MODELS](https://pytorch.org/tutorials/beginner/saving_loading_models.html)
 
 ## Papers:
 

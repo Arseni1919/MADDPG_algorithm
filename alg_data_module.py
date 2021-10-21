@@ -44,10 +44,14 @@ class ALGDataModule:
         pass
 
     def fill_the_buffer(self,  actor_net_dict):
-        while len(self.train_dataset) < UPDATE_AFTER:
+        plotter.debug("Begins to fill THe buffer...")
+        counter = 0
+        while len(self.train_dataset) < REPLAY_BUFFER_SIZE:
             for step in env_module.run_episode(models_dict=actor_net_dict):
                 experience, observations, actions, rewards, dones, new_observations = step
                 self.train_dataset.append(experience)
+                counter += 1
+                # plotter.warning(f"Counter: {counter}")
         plotter.info("Filled the dataset.")
         self.filled_the_dataset = True
 
