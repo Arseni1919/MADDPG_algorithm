@@ -18,6 +18,7 @@ class ALGPlotter:
         self.plot_life = plot_life
         self.plot_neptune = plot_neptune
         self.fig, self.actor_losses, self.critic_losses, self.ax, self.agents_list = {}, {}, {}, {}, {}
+        self.total_reward, self.val_total_rewards = [], []
 
         self.neptune_init()
         self.logging_init()
@@ -28,8 +29,8 @@ class ALGPlotter:
             self.agents_list = env_module.get_agent_list()
             self.fig, self.ax = plt.subplots(nrows=2, ncols=len(self.agents_list), figsize=(12, 6))
             # self.ax = self.fig.get_axes()
-            self.actor_losses = {agent: [] for agent in self.agents_list}
-            self.critic_losses = {agent: [] for agent in self.agents_list}
+            self.actor_losses = {agent: deque(maxlen=100) for agent in self.agents_list}
+            self.critic_losses = {agent: deque(maxlen=100) for agent in self.agents_list}
 
     def plots_update_data(self, data_dict, dict_type):
         if self.plot_life:
@@ -38,6 +39,10 @@ class ALGPlotter:
                     self.actor_losses[agent_name].append(value)
                 elif dict_type == 'critic':
                     self.critic_losses[agent_name].append(value)
+                elif dict_type == 'total_reward':
+                    self.total_reward.append(value)
+                elif dict_type == 'val_reward':
+                    self.val_total_rewards.append(value)
                 else:
                     self.error('Actor type is not correct.')
 
@@ -47,14 +52,19 @@ class ALGPlotter:
             def plot_graph(ax, indx_r, indx_c, list_of_values, label, color='b'):
                 ax[indx_r, indx_c].cla()
                 ax[indx_r, indx_c].plot(list(range(len(list_of_values))), list_of_values, c=color)  # , edgecolor='b')
-                ax[indx_r, indx_c].set_title(f'Plot: {label}')
+                # ax[indx_r, indx_c].set_title(f'Plot: {label}')
                 ax[indx_r, indx_c].set_xlabel('iters')
                 ax[indx_r, indx_c].set_ylabel(f'{label}')
 
             # graphs
-            for agent_indx, agent in enumerate(self.agents_list):
-                plot_graph(self.ax, 0, agent_indx,  self.actor_losses[agent], f'{agent}_loss')
-                plot_graph(self.ax, 1, agent_indx, self.critic_losses[agent], f'{agent}_loss')
+            # for agent_indx, agent in enumerate(self.agents_list):
+            #     plot_graph(self.ax, 0, agent_indx,  self.actor_losses[agent], f'{agent}_loss')
+            #     plot_graph(self.ax, 1, agent_indx, self.critic_losses[agent], f'{agent}_loss')
+            agent = self.agents_list[0]
+            plot_graph(self.ax, 0, 0,  self.actor_losses[agent], f'{agent}_loss')
+            plot_graph(self.ax, 1, 0, self.critic_losses[agent], f'{agent}_loss')
+            plot_graph(self.ax, 0, 1, self.total_reward, 'total_reward')
+            plot_graph(self.ax, 1, 1, self.val_total_rewards, 'val_rewards')
 
             plt.pause(0.05)
 

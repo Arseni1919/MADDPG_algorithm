@@ -48,7 +48,7 @@ class ALGModule:
         steps_counter = 0
 
         for episode in range(M_EPISODES):
-            plotter.warning(f'Episode {episode}..')
+            plotter.info(f'\rEpisode {episode}..', end='')
 
             # CHOOSE AN ACTION AND MAKE A STEP
             for step in env_module.run_episode(models_dict=self.actor_net_dict, render=False):
@@ -65,16 +65,17 @@ class ALGModule:
             # END OF AN EPISODE
             plotter.debug(f"Finished episode {episode} with a total reward: {colored(f'{total_reward}', 'magenta')}.",
                           print_info=False)
+            plotter.plots_update_data({'reward': total_reward}, 'total_reward')
             plotter.plots_online()
             total_reward = 0
             self.validation_step(episode)
 
-        plotter.info("Finished to fit the env.")
+        plotter.info("\rFinished to fit the env.")
 
     def training_step(self, steps_counter, dm, step=None):
         # experience, observations, actions, rewards, dones, new_observations = step
         if steps_counter % TRAIN_EVERY == 0:
-            plotter.debug(f"\rTRAINING STEP (Step {steps_counter})", end='')
+            # plotter.debug(f"\rTRAINING STEP (Step {steps_counter})", end='')
             for curr_agent in env_module.get_agent_list():
                 # RANDOM MINIBATCH
                 observations, actions, rewards, dones, new_observations = list(dm.train_dataloader())[0]
@@ -164,7 +165,8 @@ class ALGModule:
     def validation_step(self, episode):
         if episode % VAL_EVERY_EPISODE == 0 and episode > 0:
             plotter.debug(f"\rVALIDATION STEP (episode {episode})", end='')
-            play(1, self.actor_net_dict, print_info=True, noisy_action=False)
+            total_rewards = play(1, self.actor_net_dict, print_info=True, noisy_action=False)
+            plotter.plots_update_data({'reward': total_rewards[0]}, 'val_reward')
 
     def configure_optimizers(self):
         pass

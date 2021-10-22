@@ -8,7 +8,7 @@ from alg_plotter import plotter
 def play(times: int = 1, models_dict=None, print_info=True, noisy_action=False):
     env = ENV
     plotter.info(f"Playing the game {times} times...", print_info)
-
+    total_rewards = []
     if isinstance(env, pettingzoo.ParallelEnv):
         # plotter.debug("Inside the Parallel Env.", print_info)
         total_reward, game = 0, 0
@@ -20,6 +20,7 @@ def play(times: int = 1, models_dict=None, print_info=True, noisy_action=False):
 
             game += 1
             plotter.info(f"Finished game {game} with a total reward: {colored(f'{total_reward}', 'magenta')}.", print_info)
+            total_rewards.append(total_reward)
             total_reward = 0
 
     if isinstance(env, pettingzoo.AECEnv):
@@ -31,7 +32,9 @@ def play(times: int = 1, models_dict=None, print_info=True, noisy_action=False):
                 total_reward += reward
             game += 1
             plotter.info(f"Finished game {game} with a total reward: {colored(f'{total_reward}', 'magenta')}.", print_info)
+            total_rewards.append(total_reward)
             total_reward = 0
 
+    return total_rewards
 
 
