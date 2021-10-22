@@ -37,20 +37,16 @@ from pettingzoo.mpe import simple_spread_v2
 MAX_CYCLES = 25
 # ENV = simple_spread_v2.env(N=3, local_ratio=0.5, max_cycles=MAX_CYCLES, continuous_actions=True)
 ENV = simple_spread_v2.parallel_env(N=3, local_ratio=0.5, max_cycles=MAX_CYCLES, continuous_actions=True)
-# ENV = 'LunarLanderContinuous-v2'
-# ENV='Pendulum-v0'
-# ENV = "BipedalWalker-v3"
-# ENV = "CarRacing-v0"
-# ENV='MountainCarContinuous-v0'
+
 NUMBER_OF_GAMES = 10
 SAVE_RESULTS = True
 # SAVE_RESULTS = False
-PATH = 'data/actor_net.pt'
+SAVE_PATH = 'data/actor_net.pt'
 
 # NEPTUNE = True
 NEPTUNE = False
-PLOT_LIVE = True
-# PLOT_LIVE = False
+# PLOT_LIVE = True
+PLOT_LIVE = False
 RENDER_WHILE_TRAINING = False
 
 # ------------------------------------------- #
@@ -66,14 +62,14 @@ MAX_STEPS = MAX_CYCLES * 100  # maximum epoch to execute
 M_EPISODES = 20
 BATCH_SIZE = 64  # size of the batches
 BATCHES_PER_TRAINING_STEP = 3
+REPLAY_BUFFER_SIZE = BATCH_SIZE * 10
 LR_CRITIC = 3e-4  # learning rate
 LR_ACTOR = 3e-3  # learning rate
 GAMMA = 0.99  # discount factor
 ACT_NOISE = 0.5  # actuator noise
 POLYAK = 0.999
-VAL_CHECKPOINT_INTERVAL = 5
-REPLAY_BUFFER_SIZE = BATCH_SIZE * 10
-UPDATE_EVERY = 50
+VAL_EVERY = 5
+TRAIN_EVERY = 5
 HIDDEN_SIZE = 256
 Experience = namedtuple('Experience', ['state', 'action', 'reward', 'done', 'new_state'])
 

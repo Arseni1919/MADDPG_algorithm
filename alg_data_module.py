@@ -76,13 +76,13 @@ class ALGDataModule:
         #     dones = {agent: False for agent in env.agents}
         #     while len(self.train_dataset) < UPDATE_AFTER:
         #         actions = get_actions(env, observations, dones, actor_net_dict)
-        #         new_observations, rewards, dones, infos = env.step(actions)
+        #         b_all_new_observations, b_all_rewards, dones, infos = env.step(actions)
         #
         #         # ADD TO EXPERIENCE BUFFER
-        #         experience = Experience(state=observations, action=actions, reward=rewards, done=dones,
-        #                                 new_state=new_observations)
+        #         experience = Experience(state=observations, action=actions, reward=b_all_rewards, done=dones,
+        #                                 new_state=b_all_new_observations)
         #         self.train_dataset.append(experience)
-        #         observations = new_observations
+        #         observations = b_all_new_observations
         #
         #         if all(dones.values()):
         #             observations = self.env.reset()

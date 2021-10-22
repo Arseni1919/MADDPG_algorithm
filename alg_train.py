@@ -46,9 +46,9 @@ def train():
 
     # Save Results
     if SAVE_RESULTS:
-        torch.save(list(actor_net_dict.values())[0], 'data/actor_net.pt')
+        torch.save(list(actor_net_dict.values())[0], SAVE_PATH)
         # example runs
-        model = torch.load('actor_net.pt')
+        model = torch.load(SAVE_PATH)
         model.eval()
         models_dict = {agent: model for agent in env_module.get_agent_list()}
         play(10, models_dict=models_dict)

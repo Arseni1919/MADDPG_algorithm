@@ -9,32 +9,34 @@ class ALGEnvModule:
         plotter.info("ALGEnvModule instance created.")
 
     def get_action(self, observation, done, model: nn.Module, noisy_action=True):
+        # AGENT OUT OF A GAME
+        if done:
+            return None
+
+        # GETS THE ACTION
+        observation = Variable(torch.from_numpy(np.expand_dims(observation, axis=0)).float().unsqueeze(0))
+        model_output = model(observation)
+        model_output = torch.squeeze(model_output)
+        action = model_output.float().detach().numpy()
+
+        # IF NO NEED TO ADD SOME RANDOM NOISE
+        if noisy_action:
+            # ADDS NOISE
+            #           (1) random process -> torch.normal(mean=torch.tensor(10.0), std=torch.tensor(10.0))
+            #           (2) m = Normal(torch.tensor([0.0]), torch.tensor([1.0])) -> m.sample()
+            action += torch.normal(mean=torch.tensor(0.0), std=torch.tensor(self.noise_std)).item()
+
+        clipped_action = np.clip(action, 0, 1)
+
+        return clipped_action
+
+    def get_action_no_grad(self, observation, done, model: nn.Module, noisy_action=True):
         with torch.no_grad():
-
-            # AGENT OUT OF A GAME
-            if done:
-                return None
-
-            # GETS THE ACTION
-            observation = Variable(torch.from_numpy(np.expand_dims(observation, axis=0)).float().unsqueeze(0))
-            model_output = model(observation)
-            model_output = torch.squeeze(model_output)
-            action = model_output.float().detach().numpy()
-
-            # IF NO NEED TO ADD SOME RANDOM NOISE
-            if noisy_action:
-                # ADDS NOISE
-                #           (1) random process -> torch.normal(mean=torch.tensor(10.0), std=torch.tensor(10.0))
-                #           (2) m = Normal(torch.tensor([0.0]), torch.tensor([1.0])) -> m.sample()
-                action += torch.normal(mean=torch.tensor(0.0), std=torch.tensor(self.noise_std)).item()
-
-            clipped_action = np.clip(action, 0, 1)
-
-            return clipped_action
+            self.get_action(observation, done, model, noisy_action)
 
     def get_actions(self, env, observations, dones, models, noisy_action=True):
         return {
-            agent: self.get_action(observations[agent], dones[agent], models[agent], noisy_action=noisy_action)
+            agent: self.get_action_no_grad(observations[agent], dones[agent], models[agent], noisy_action=noisy_action)
             for agent in env.agents
         }
 
