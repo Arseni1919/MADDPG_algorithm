@@ -1,3 +1,5 @@
+import torch
+
 from alg_constrants_amd_packages import *
 
 
@@ -16,6 +18,7 @@ class ActorNet(nn.Module):
             nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
             nn.ReLU(),
             nn.Linear(HIDDEN_SIZE, n_actions),
+            # TODO
             nn.Tanh()
         )
 
@@ -42,16 +45,16 @@ class CriticNet(nn.Module):
         super(CriticNet, self).__init__()
 
         self.obs_net = nn.Sequential(
-            nn.Linear(obs_size * n_agents + n_actions * n_agents, HIDDEN_SIZE),
+            nn.Linear(obs_size * n_agents, HIDDEN_SIZE),
             nn.ReLU(),
             nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
             nn.ReLU(),
-            nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
+            nn.Linear(HIDDEN_SIZE, obs_size * n_agents),
             nn.ReLU(),
         )
 
         self.out_net = nn.Sequential(
-            nn.Linear(HIDDEN_SIZE + n_actions, HIDDEN_SIZE),
+            nn.Linear(obs_size * n_agents + n_actions * n_agents, HIDDEN_SIZE),
             nn.ReLU(),
             nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
             nn.ReLU(),
@@ -64,11 +67,15 @@ class CriticNet(nn.Module):
         self.entropy_term = 0
 
     def forward(self, state, action):
-        if type(state) is np.ndarray:
-            state = Variable(torch.from_numpy(state).float().unsqueeze(0))
+        if type(state) is not torch.Tensor:
+            # state = Variable(torch.from_numpy(state).float().unsqueeze(0))
+            state = Variable(torch.tensor(state, requires_grad=True).float().unsqueeze(0))
+            action = Variable(torch.tensor(action, requires_grad=True).float().unsqueeze(0))
+
         state = state.float()
         obs = self.obs_net(state)
-        value = self.out_net(torch.cat([obs, action], dim=1))
+        cat = torch.cat([obs, action], dim=1)
+        value = self.out_net(cat)
 
         return value
 

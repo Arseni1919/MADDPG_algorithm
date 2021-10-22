@@ -9,7 +9,6 @@ logging.error('And non-ASCII stuff, too, like Øresund and Malmö')
 """
 
 
-
 class ALGPlotter:
     """
     This object is responsible for plotting, logging and neptune updating.
@@ -65,7 +64,7 @@ class ALGPlotter:
                 'GAMMA': GAMMA,
                 # 'LR': LR,
                 # 'CLIP_GRAD': CLIP_GRAD,
-                'MAX_STEPS': MAX_STEPS,
+                # 'MAX_STEPS': MAX_STEPS,
             }
             self.run['parameters'] = PARAMS
         else:
@@ -82,20 +81,20 @@ class ALGPlotter:
         # logging.basicConfig(level=logging.DEBUG)
         pass
 
-    def info(self, message, print_info=True):
+    def info(self, message, print_info=True, end='\n'):
         # logging.info('So should this')
         if print_info:
-            print(colored(f'~[INFO]: {message}', 'green'))
+            print(colored(f'~[INFO]: {message}', 'green'), end=end)
 
-    def debug(self, message, print_info=True):
+    def debug(self, message, print_info=True, end='\n'):
         # logging.debug('This message should go to the log file')
         if print_info:
-            print(colored(f'~[DEBUG]: {message}', 'cyan'))
+            print(colored(f'~[DEBUG]: {message}', 'cyan'), end=end)
 
-    def warning(self, message, print_info=True):
+    def warning(self, message, print_info=True, end='\n'):
         # logging.warning('And this, too')
         if print_info:
-            print(colored(f'~[WARNING]: {message}', 'yellow'))
+            print(colored(f'\n~[WARNING]: {message}', 'yellow'), end=end)
 
     def error(self, message):
         # logging.error('And non-ASCII stuff, too, like Øresund and Malmö')

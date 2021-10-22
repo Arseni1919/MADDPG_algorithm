@@ -1,3 +1,5 @@
+import torch
+
 from alg_constrants_amd_packages import *
 from alg_plotter import plotter
 
@@ -11,7 +13,7 @@ class ALGEnvModule:
     def get_action(self, observation, done, model: nn.Module, noisy_action=True):
         # AGENT OUT OF A GAME
         if done:
-            return None
+            return torch.zeros(size=list(self.env.action_spaces.values())[0].shape)
 
         # GETS THE ACTION
         observation = Variable(torch.from_numpy(np.expand_dims(observation, axis=0)).float().unsqueeze(0))
@@ -32,7 +34,7 @@ class ALGEnvModule:
 
     def get_action_no_grad(self, observation, done, model: nn.Module, noisy_action=True):
         with torch.no_grad():
-            self.get_action(observation, done, model, noisy_action)
+            return self.get_action(observation, done, model, noisy_action)
 
     def get_actions(self, env, observations, dones, models, noisy_action=True):
         return {
@@ -54,44 +56,42 @@ class ALGEnvModule:
         return torch.tensor(n_actions.shape)
 
     def run_episode(self, models_dict=None, render=False, noisy_action=True):
+        # INIT
+        episode_ended = False
+        observations = self.env.reset()
+        dones = {agent: False for agent in self.env.agents}
 
-        with torch.no_grad():
-            # INIT
-            episode_ended = False
-            observations = self.env.reset()
-            dones = {agent: False for agent in self.env.agents}
+        while not episode_ended:
 
-            while not episode_ended:
+            # CHOOSES ACTIONS
+            if models_dict:
+                actions = self.get_actions(self.env, observations, dones, models_dict, noisy_action=noisy_action)
+            else:
+                actions = {agent: ENV.action_spaces[agent].sample() for agent in self.env.agents}
 
-                # CHOOSES ACTIONS
-                if models_dict:
-                    actions = self.get_actions(self.env, observations, dones, models_dict, noisy_action=noisy_action)
-                else:
-                    actions = {agent: ENV.action_spaces[agent].sample() for agent in self.env.agents}
+            # TAKES THE ACTIONS INSIDE ENV
+            new_observations, rewards, dones, infos = ENV.step(actions)
 
-                # TAKES THE ACTIONS INSIDE ENV
-                new_observations, rewards, dones, infos = ENV.step(actions)
+            # ADDS TO EXPERIENCE BUFFER
+            experience = Experience(state=observations, action=actions, reward=rewards, done=dones,
+                                    new_state=new_observations)
+            # YIELDS INFO
+            yield experience, observations, actions, rewards, dones, new_observations
 
-                # ADDS TO EXPERIENCE BUFFER
-                experience = Experience(state=observations, action=actions, reward=rewards, done=dones,
-                                        new_state=new_observations)
-                # YIELDS INFO
-                yield experience, observations, actions, rewards, dones, new_observations
+            # UPDATES OBSERVATIONS VARIABLE
+            observations = new_observations
 
-                # UPDATES OBSERVATIONS VARIABLE
-                observations = new_observations
+            if render:
+                self.env.render()
 
-                if render:
-                    self.env.render()
+            if all(dones.values()):
+                # END OF THE EPISODE
+                observations = self.env.reset()
+                dones = {agent: False for agent in self.env.agents}
+                # print(f'{colored("finished", "green")} game {game} with a total reward: {total_reward}')
+                episode_ended = True
 
-                if all(dones.values()):
-                    # END OF THE EPISODE
-                    observations = self.env.reset()
-                    dones = {agent: False for agent in self.env.agents}
-                    # print(f'{colored("finished", "green")} game {game} with a total reward: {total_reward}')
-                    episode_ended = True
-
-            self.env.close()
+        self.env.close()
 
     def run_episode_seq(self, models_dict=None, render=False):
         # with torch.no_grad():
