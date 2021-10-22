@@ -13,48 +13,56 @@ class ALGPlotter:
     """
     This object is responsible for plotting, logging and neptune updating.
     """
-    def __init__(self):
-        if PLOT_LIVE:
-            self.fig, _ = plt.subplots(nrows=2, ncols=3, figsize=(12, 6))
-            self.actor_losses = []
-            self.critic_losses_1 = []
-            self.critic_losses_2 = []
+    def __init__(self, plot_life=True, plot_neptune=False):
+
+        self.plot_life = plot_life
+        self.plot_neptune = plot_neptune
+        self.fig, self.actor_losses, self.critic_losses, self.ax, self.agents_list = {}, {}, {}, {}, {}
 
         self.neptune_init()
         self.logging_init()
         self.info("ALGPlotter instance created.")
 
-    def plot_online(self, graph_dict):
+    def plots_set(self, env_module):
+        if self.plot_life:
+            self.agents_list = env_module.get_agent_list()
+            self.fig, self.ax = plt.subplots(nrows=2, ncols=len(self.agents_list), figsize=(12, 6))
+            # self.ax = self.fig.get_axes()
+            self.actor_losses = {agent: [] for agent in self.agents_list}
+            self.critic_losses = {agent: [] for agent in self.agents_list}
+
+    def plots_update_data(self, data_dict, dict_type):
+        if self.plot_life:
+            for agent_name, value in data_dict.items():
+                if dict_type == 'actor':
+                    self.actor_losses[agent_name].append(value)
+                elif dict_type == 'critic':
+                    self.critic_losses[agent_name].append(value)
+                else:
+                    self.error('Actor type is not correct.')
+
+    def plots_online(self):
         # plot live:
-        if PLOT_LIVE:
-            def plot_graph(ax, indx, list_of_values, label, color='r'):
-                ax[indx].cla()
-                ax[indx].plot(list(range(len(list_of_values))), list_of_values, c=color)  # , edgecolor='b')
-                ax[indx].set_title(f'Plot: {label}')
-                ax[indx].set_xlabel('iters')
-                ax[indx].set_ylabel(f'{label}')
-
-            ax = self.fig.get_axes()
-            b_indx = graph_dict['b_indx']
-
-            self.actor_losses.append(graph_dict['actor_loss'])
-            self.critic_losses_1.append(graph_dict['critic_loss_1'])
-            self.critic_losses_2.append(graph_dict['critic_loss_2'])
+        if self.plot_life:
+            def plot_graph(ax, indx_r, indx_c, list_of_values, label, color='b'):
+                ax[indx_r, indx_c].cla()
+                ax[indx_r, indx_c].plot(list(range(len(list_of_values))), list_of_values, c=color)  # , edgecolor='b')
+                ax[indx_r, indx_c].set_title(f'Plot: {label}')
+                ax[indx_r, indx_c].set_xlabel('iters')
+                ax[indx_r, indx_c].set_ylabel(f'{label}')
 
             # graphs
-            if b_indx % 9 == 0:
-                plot_graph(ax, 1, self.actor_losses, 'actor_loss')
-                plot_graph(ax, 2, self.critic_losses_1, 'critic_loss_1')
-                plot_graph(ax, 2, self.critic_losses_2, 'critic_loss_2')
-                # plot_graph(ax, 4, graph_dict['critic_w_mse'], 'critic_w_mse')
+            for agent_indx, agent in enumerate(self.agents_list):
+                plot_graph(self.ax, 0, agent_indx,  self.actor_losses[agent], f'{agent}_loss')
+                plot_graph(self.ax, 1, agent_indx, self.critic_losses[agent], f'{agent}_loss')
 
-                plt.pause(0.05)
+            plt.pause(0.05)
 
     def plot_summary(self):
         pass
 
     def neptune_init(self):
-        if NEPTUNE:
+        if self.plot_neptune:
             self.run = neptune.init(project='1919ars/PL-implementations',
                                     tags=['MADDPG'],
                                     name=f'MADDPG_{time.asctime()}',
@@ -71,7 +79,7 @@ class ALGPlotter:
             self.run = {}
 
     def neptune_update(self, loss):
-        if NEPTUNE:
+        if self.plot_neptune:
             self.run['acc_loss'].log(loss)
             self.run['acc_loss_log'].log(f'{loss}')
 
@@ -101,11 +109,10 @@ class ALGPlotter:
         raise RuntimeError(f"~[ERROR]: {message}")
 
 
-
-
-
-
-plotter = ALGPlotter()
+plotter = ALGPlotter(
+    plot_life=PLOT_LIVE,
+    plot_neptune=NEPTUNE
+)
 
 
 

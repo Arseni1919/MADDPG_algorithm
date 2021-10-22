@@ -10,7 +10,7 @@ def play(times: int = 1, models_dict=None, print_info=True, noisy_action=False):
     plotter.info(f"Playing the game {times} times...", print_info)
 
     if isinstance(env, pettingzoo.ParallelEnv):
-        plotter.debug("Inside the Parallel Env.", print_info)
+        # plotter.debug("Inside the Parallel Env.", print_info)
         total_reward, game = 0, 0
         for episode in range(times):
             for step in env_module.run_episode(models_dict=models_dict, render=True, noisy_action=noisy_action):
@@ -23,7 +23,7 @@ def play(times: int = 1, models_dict=None, print_info=True, noisy_action=False):
             total_reward = 0
 
     if isinstance(env, pettingzoo.AECEnv):
-        plotter.debug("Inside the AECEnv Env.", print_info)
+        # plotter.debug("Inside the AECEnv Env.", print_info)
         total_reward, game = 0, 0
         for episode in range(times):
             for step in env_module.run_episode_seq(models_dict=models_dict, render=True):

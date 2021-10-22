@@ -35,8 +35,9 @@ from torch.utils.data import DataLoader, Dataset
 # ------------------------------------------- #
 from pettingzoo.mpe import simple_spread_v2
 MAX_CYCLES = 25
+NUMBER_OF_AGENTS = 3
 # ENV = simple_spread_v2.env(N=3, local_ratio=0.5, max_cycles=MAX_CYCLES, continuous_actions=True)
-ENV = simple_spread_v2.parallel_env(N=3, local_ratio=0.5, max_cycles=MAX_CYCLES, continuous_actions=True)
+ENV = simple_spread_v2.parallel_env(N=NUMBER_OF_AGENTS, local_ratio=0.5, max_cycles=MAX_CYCLES, continuous_actions=True)
 
 NUMBER_OF_GAMES = 10
 SAVE_RESULTS = True
@@ -45,8 +46,8 @@ SAVE_PATH = 'data/actor_net.pt'
 
 # NEPTUNE = True
 NEPTUNE = False
-# PLOT_LIVE = True
-PLOT_LIVE = False
+PLOT_LIVE = True
+# PLOT_LIVE = False
 RENDER_WHILE_TRAINING = False
 
 # ------------------------------------------- #

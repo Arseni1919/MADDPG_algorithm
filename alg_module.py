@@ -41,6 +41,7 @@ class ALGModule:
 
     def fit_parallel_env(self, dm):
         plotter.info("Beginning to fit the env...")
+        plotter.plots_set(env_module=env_module)
 
         # FIRST INIT
         total_reward = 0
@@ -64,6 +65,7 @@ class ALGModule:
             # END OF AN EPISODE
             plotter.debug(f"Finished episode {episode} with a total reward: {colored(f'{total_reward}', 'magenta')}.",
                           print_info=False)
+            plotter.plots_online()
             total_reward = 0
             self.validation_step(episode)
 
@@ -83,6 +85,8 @@ class ALGModule:
                 # UPDATES ACTOR
                 actor_loss = self.update_agent_actor(curr_agent, observations, actions, dones)
 
+                plotter.plots_update_data({curr_agent: critic_loss}, 'critic')
+                plotter.plots_update_data({curr_agent: actor_loss}, 'actor')
             # UPDATES TARGET NETWORK PARAMETERS
             self.update_target_net_params()
 
@@ -160,7 +164,7 @@ class ALGModule:
     def validation_step(self, episode):
         if episode % VAL_EVERY_EPISODE == 0 and episode > 0:
             plotter.debug(f"\rVALIDATION STEP (episode {episode})", end='')
-            play(1, self.actor_net_dict, print_info=False, noisy_action=False)
+            play(1, self.actor_net_dict, print_info=True, noisy_action=False)
 
     def configure_optimizers(self):
         pass
