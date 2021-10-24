@@ -27,7 +27,8 @@ class ALGPlotter:
     def plots_set(self, env_module):
         if self.plot_life:
             self.agents_list = env_module.get_agent_list()
-            self.fig, self.ax = plt.subplots(nrows=2, ncols=len(self.agents_list), figsize=(12, 6))
+            # self.fig, self.ax = plt.subplots(nrows=2, ncols=len(self.agents_list), figsize=(12, 6))
+            self.fig, self.ax = plt.subplots(nrows=2, ncols=3, figsize=(12, 6))
             # self.ax = self.fig.get_axes()
             self.actor_losses = {agent: deque(maxlen=100) for agent in self.agents_list}
             self.critic_losses = {agent: deque(maxlen=100) for agent in self.agents_list}

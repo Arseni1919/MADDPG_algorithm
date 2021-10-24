@@ -35,7 +35,9 @@ from torch.utils.data import DataLoader, Dataset
 # ------------------------------------------- #
 from pettingzoo.mpe import simple_spread_v2
 MAX_CYCLES = 25
-NUMBER_OF_AGENTS = 3
+# MAX_CYCLES = 75
+# NUMBER_OF_AGENTS = 3
+NUMBER_OF_AGENTS = 1
 # ENV = simple_spread_v2.env(N=3, local_ratio=0.5, max_cycles=MAX_CYCLES, continuous_actions=True)
 ENV = simple_spread_v2.parallel_env(N=NUMBER_OF_AGENTS, local_ratio=0.5, max_cycles=MAX_CYCLES, continuous_actions=True)
 
@@ -59,16 +61,16 @@ RENDER_WHILE_TRAINING = False
 # REWARD_STEPS = 4
 # CLIP_GRAD = 0.1
 
-M_EPISODES = 200
+M_EPISODES = 1000
 BATCH_SIZE = 64  # size of the batches
-REPLAY_BUFFER_SIZE = BATCH_SIZE * 100
-LR_CRITIC = 3e-4  # learning rate
-LR_ACTOR = 3e-3  # learning rate
-GAMMA = 0.99  # discount factor
+REPLAY_BUFFER_SIZE = BATCH_SIZE * 1000
+LR_CRITIC = 1e-2  # learning rate
+LR_ACTOR = 1e-2  # learning rate
+GAMMA = 0.95  # discount factor
 ACT_NOISE = 0.5  # actuator noise
-POLYAK = 0.999
-VAL_EVERY_EPISODE = 5
-TRAIN_EVERY = 5
+POLYAK = 0.99
+VAL_EVERY = 2000
+TRAIN_EVERY = 100
 HIDDEN_SIZE = 256
 Experience = namedtuple('Experience', ['state', 'action', 'reward', 'done', 'new_state'])
 

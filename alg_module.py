@@ -59,7 +59,7 @@ class ALGModule:
                 dm.train_dataset.append(experience)
 
                 # TRAINING STEP
-                self.training_step(steps_counter, dm)
+                self.training_step(steps_counter, episode, dm)
                 steps_counter += 1
 
             # END OF AN EPISODE
@@ -68,28 +68,29 @@ class ALGModule:
             plotter.plots_update_data({'reward': total_reward}, 'total_reward')
             plotter.plots_online()
             total_reward = 0
-            self.validation_step(episode)
+            self.validation_step(steps_counter)
 
         plotter.info("\rFinished to fit the env.")
 
-    def training_step(self, steps_counter, dm, step=None):
+    def training_step(self, steps_counter, episode, dm, step=None):
         # experience, observations, actions, rewards, dones, new_observations = step
         if steps_counter % TRAIN_EVERY == 0:
-            # plotter.debug(f"\rTRAINING STEP (Step {steps_counter})", end='')
-            for curr_agent in env_module.get_agent_list():
-                # RANDOM MINIBATCH
-                observations, actions, rewards, dones, new_observations = list(dm.train_dataloader())[0]
-                # COMPUTES TARGETS
-                y = self.get_y_targets(curr_agent, rewards, dones, new_observations)
-                # UPDATES CRITIC
-                critic_loss = self.update_agent_critic(curr_agent, y, observations, actions)
-                # UPDATES ACTOR
-                actor_loss = self.update_agent_actor(curr_agent, observations, actions, dones)
+            plotter.debug(f"\rTRAINING STEP (Step {steps_counter}, episode {episode})", end='')
+            for b_i in range(10):
+                for curr_agent in env_module.get_agent_list():
+                    # RANDOM MINIBATCH
+                    observations, actions, rewards, dones, new_observations = list(dm.train_dataloader())[b_i]
+                    # COMPUTES TARGETS
+                    y = self.get_y_targets(curr_agent, rewards, dones, new_observations)
+                    # UPDATES CRITIC
+                    critic_loss = self.update_agent_critic(curr_agent, y, observations, actions)
+                    # UPDATES ACTOR
+                    actor_loss = self.update_agent_actor(curr_agent, observations, actions, dones)
 
-                plotter.plots_update_data({curr_agent: critic_loss}, 'critic')
-                plotter.plots_update_data({curr_agent: actor_loss}, 'actor')
-            # UPDATES TARGET NETWORK PARAMETERS
-            self.update_target_net_params()
+                    plotter.plots_update_data({curr_agent: critic_loss}, 'critic')
+                    plotter.plots_update_data({curr_agent: actor_loss}, 'actor')
+                # UPDATES TARGET NETWORK PARAMETERS
+                self.update_target_net_params()
 
     def get_y_targets(self, curr_agent, rewards, dones, new_observations):
         y = []
@@ -138,7 +139,7 @@ class ALGModule:
                         observation=observations[agent][j],
                         done=dones[agent][j],
                         model=self.actor_net_dict[agent],
-                        noisy_action=True
+                        noisy_action=False
                     )
                     actions_list.extend(curr_action)
             Q_j_curr_agent = self.critic_net_dict[curr_agent](obs_list, actions_list)
@@ -162,10 +163,10 @@ class ALGModule:
                                            self.actor_net_dict[agent].parameters()):
                 target_param.data.copy_(POLYAK * target_param.data + (1.0 - POLYAK) * param.data)
 
-    def validation_step(self, episode):
-        if episode % VAL_EVERY_EPISODE == 0 and episode > 0:
-            plotter.debug(f"\rVALIDATION STEP (episode {episode})", end='')
-            total_rewards = play(1, self.actor_net_dict, print_info=True, noisy_action=False)
+    def validation_step(self, steps_counter):
+        if steps_counter % VAL_EVERY == 0 and steps_counter > 0:
+            plotter.debug(f"\rVALIDATION STEP (step {steps_counter})", end='')
+            total_rewards = play(1, self.actor_net_dict, print_info=True, noisy_action=False, render=False)
             plotter.plots_update_data({'reward': total_rewards[0]}, 'val_reward')
 
     def configure_optimizers(self):

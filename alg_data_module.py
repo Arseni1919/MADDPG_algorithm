@@ -51,7 +51,7 @@ class ALGDataModule:
                 experience, observations, actions, rewards, dones, new_observations = step
                 self.train_dataset.append(experience)
                 counter += 1
-                # plotter.warning(f"Counter: {counter}")
+                plotter.debug(f"\rFinished: {counter} out of {REPLAY_BUFFER_SIZE}", end='')
         plotter.info("Filled the dataset.")
         self.filled_the_dataset = True
 

@@ -16,6 +16,7 @@ def alg_try(times=1, with_model=True):
 
 if __name__ == '__main__':
     alg_try(times=10, with_model=True)
+    # alg_try(times=10, with_model=False)
 
     # print('Press enter..')
     # for i in range(3):

@@ -18,8 +18,8 @@ class ActorNet(nn.Module):
             nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
             nn.ReLU(),
             nn.Linear(HIDDEN_SIZE, n_actions),
-            # TODO
-            nn.Tanh()
+            # nn.Tanh()
+            nn.Sigmoid(),
         )
 
         self.n_actions = n_actions
