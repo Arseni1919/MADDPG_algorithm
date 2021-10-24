@@ -29,7 +29,7 @@
 - [PyTorch Lightning | LIGHTNINGDATAMODULE](https://pytorch-lightning.readthedocs.io/en/latest/extensions/datamodules.html#datamodules)
 - [PyTorch Lightning | MANAGING DATA](https://pytorch-lightning.readthedocs.io/en/latest/guides/data.html)
 - [RealPython | How to Use Generators and yield in Python](https://realpython.com/introduction-to-python-generators/)
-- []()
+- Other implementations: [variant 1](https://github.com/xuehy/pytorch-maddpg/blob/master/MADDPG.py), [variant 2](https://github.com/shariqiqbal2810/maddpg-pytorch/blob/master/algorithms/maddpg.py)
 - []()
 - []()
 
