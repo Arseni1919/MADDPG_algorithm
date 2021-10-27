@@ -24,12 +24,11 @@
 ### MADDPG:
 
 - [`simple_spread` environment](https://www.pettingzoo.ml/mpe/simple_spread)
-- [GitHub | MADDPG implementation of `starry-sky6688`](https://github.com/starry-sky6688/MADDPG/blob/master/maddpg/maddpg.py)
 - [PyTorch | SIGMOID](https://pytorch.org/docs/stable/generated/torch.nn.Sigmoid.html)
 - [PyTorch Lightning | LIGHTNINGDATAMODULE](https://pytorch-lightning.readthedocs.io/en/latest/extensions/datamodules.html#datamodules)
 - [PyTorch Lightning | MANAGING DATA](https://pytorch-lightning.readthedocs.io/en/latest/guides/data.html)
 - [RealPython | How to Use Generators and yield in Python](https://realpython.com/introduction-to-python-generators/)
-- Other implementations: [variant 1](https://github.com/xuehy/pytorch-maddpg/blob/master/MADDPG.py), [variant 2](https://github.com/shariqiqbal2810/maddpg-pytorch/blob/master/algorithms/maddpg.py)
+- Other implementations: [variant 1](https://github.com/starry-sky6688/MADDPG/blob/master/maddpg/maddpg.py), [variant 2](https://github.com/xuehy/pytorch-maddpg/blob/master/MADDPG.py), [variant 3](https://github.com/shariqiqbal2810/maddpg-pytorch/blob/master/algorithms/maddpg.py)
 - []()
 - []()
 
