@@ -7,7 +7,8 @@ from alg_GLOBALS import *
 class MultiAgentEnv:
     def __init__(self, env):
         self.env = env
-        self.state_stat = RunningStateStat(self.env.reset())
+        self.env.reset()
+        self.state_stat = RunningStateStat(self.env.last()[0])
 
     def observation_size(self):
         pass
