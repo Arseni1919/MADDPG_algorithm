@@ -1,22 +1,10 @@
 import time
 
-from alg_constrants_amd_packages import *
-from alg_general_functions import *
-
-
-def alg_try(times=1, with_model=True):
-    if with_model:
-        model = torch.load(SAVE_PATH)
-        model.eval()
-        models_dict = {agent: model for agent in env_module.get_agent_list()}
-        play(times, models_dict=models_dict)
-    else:
-        play(times)
+from alg_GLOBALS import *
 
 
 if __name__ == '__main__':
-    alg_try(times=10, with_model=True)
-    # alg_try(times=10, with_model=False)
+    pass
 
     # print('Press enter..')
     # for i in range(3):

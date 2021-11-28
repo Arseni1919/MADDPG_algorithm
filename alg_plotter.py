@@ -1,4 +1,4 @@
-from alg_constrants_amd_packages import *
+from alg_GLOBALS import *
 import logging
 """
 logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG)
@@ -13,117 +13,52 @@ class ALGPlotter:
     """
     This object is responsible for plotting, logging and neptune updating.
     """
-    def __init__(self, plot_life=True, plot_neptune=False):
+    def __init__(self, plot_life=True, plot_neptune=False, name='nameless', tags=None):
 
+        if tags is None:
+            self.tags = []
         self.plot_life = plot_life
         self.plot_neptune = plot_neptune
         self.fig, self.actor_losses, self.critic_losses, self.ax, self.agents_list = {}, {}, {}, {}, {}
         self.total_reward, self.val_total_rewards = [], []
+        self.name = name
 
-        self.neptune_init()
-        self.logging_init()
-        self.info("ALGPlotter instance created.")
-
-    def plots_set(self, env_module):
-        if self.plot_life:
-            self.agents_list = env_module.get_agent_list()
-            # self.fig, self.ax = plt.subplots(nrows=2, ncols=len(self.agents_list), figsize=(12, 6))
-            self.fig, self.ax = plt.subplots(nrows=2, ncols=3, figsize=(12, 6))
-            # self.ax = self.fig.get_axes()
-            self.actor_losses = {agent: deque(maxlen=100) for agent in self.agents_list}
-            self.critic_losses = {agent: deque(maxlen=100) for agent in self.agents_list}
-
-    def plots_update_data(self, data_dict, dict_type):
-        if self.plot_life:
-            for agent_name, value in data_dict.items():
-                if dict_type == 'actor':
-                    self.actor_losses[agent_name].append(value)
-                elif dict_type == 'critic':
-                    self.critic_losses[agent_name].append(value)
-                elif dict_type == 'total_reward':
-                    self.total_reward.append(value)
-                elif dict_type == 'val_reward':
-                    self.val_total_rewards.append(value)
-                else:
-                    self.error('Actor type is not correct.')
+        self.run = {}
+        self.neptune_initiated = False
+        print(colored(f'~[INFO]: "ALGPlotter instance created."', 'green'))
 
     def plots_online(self):
-        # plot live:
         if self.plot_life:
-            def plot_graph(ax, indx_r, indx_c, list_of_values, label, color='b'):
-                ax[indx_r, indx_c].cla()
-                ax[indx_r, indx_c].plot(list(range(len(list_of_values))), list_of_values, c=color)  # , edgecolor='b')
-                # ax[indx_r, indx_c].set_title(f'Plot: {label}')
-                ax[indx_r, indx_c].set_xlabel('iters')
-                ax[indx_r, indx_c].set_ylabel(f'{label}')
+            pass
 
-            # graphs
-            # for agent_indx, agent in enumerate(self.agents_list):
-            #     plot_graph(self.ax, 0, agent_indx,  self.actor_losses[agent], f'{agent}_loss')
-            #     plot_graph(self.ax, 1, agent_indx, self.critic_losses[agent], f'{agent}_loss')
-            agent = self.agents_list[0]
-            plot_graph(self.ax, 0, 0,  self.actor_losses[agent], f'{agent}_loss')
-            plot_graph(self.ax, 1, 0, self.critic_losses[agent], f'{agent}_loss')
-            plot_graph(self.ax, 0, 1, self.total_reward, 'total_reward')
-            plot_graph(self.ax, 1, 1, self.val_total_rewards, 'val_rewards')
+    def plot_close(self):
+        if self.plot_life:
+            plt.close()
 
-            plt.pause(0.05)
-
-    def plot_summary(self):
-        pass
-
-    def neptune_init(self):
+    def neptune_init(self, params):
         if self.plot_neptune:
-            self.run = neptune.init(project='1919ars/PL-implementations',
-                                    tags=['MADDPG'],
-                                    name=f'MADDPG_{time.asctime()}',
-                                    source_files=['alg_constrants_amd_packages.py'])
-            # Neptune.ai Logger
-            PARAMS = {
-                'GAMMA': GAMMA,
-                # 'LR': LR,
-                # 'CLIP_GRAD': CLIP_GRAD,
-                # 'MAX_STEPS': MAX_STEPS,
-            }
-            self.run['parameters'] = PARAMS
-        else:
-            self.run = {}
+            self.run = neptune.init(project='1919ars/MA-implementations',
+                                    tags=self.tags,
+                                    name=f'{self.name}')
 
-    def neptune_update(self, loss):
+            self.run['parameters'] = params
+            self.neptune_initiated = True
+
+    def neptune_plot(self, update_dict: dict):
         if self.plot_neptune:
-            self.run['acc_loss'].log(loss)
-            self.run['acc_loss_log'].log(f'{loss}')
 
-    @staticmethod
-    def logging_init():
-        # logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG)
-        # logging.basicConfig(level=logging.DEBUG)
-        pass
+            if not self.neptune_initiated:
+                raise RuntimeError('~[ERROR]: Initiate NEPTUNE!')
 
-    def info(self, message, print_info=True, end='\n'):
-        # logging.info('So should this')
-        if print_info:
-            print(colored(f'~[INFO]: {message}', 'green'), end=end)
+            for k, v in update_dict.items():
+                self.run[k].log(v)
 
-    def debug(self, message, print_info=True, end='\n'):
-        # logging.debug('This message should go to the log file')
-        if print_info:
-            print(colored(f'~[DEBUG]: {message}', 'cyan'), end=end)
-
-    def warning(self, message, print_info=True, end='\n'):
-        # logging.warning('And this, too')
-        if print_info:
-            print(colored(f'\n~[WARNING]: {message}', 'yellow'), end=end)
-
-    def error(self, message):
-        # logging.error('And non-ASCII stuff, too, like Øresund and Malmö')
-        raise RuntimeError(f"~[ERROR]: {message}")
+    def neptune_close(self):
+        if self.plot_neptune and self.neptune_initiated:
+            self.run.stop()
 
 
-plotter = ALGPlotter(
-    plot_life=PLOT_LIVE,
-    plot_neptune=NEPTUNE
-)
+
 
 
 

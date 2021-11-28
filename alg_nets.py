@@ -1,6 +1,6 @@
 import torch
 
-from alg_constrants_amd_packages import *
+from alg_GLOBALS import *
 
 
 class ActorNet(nn.Module):
@@ -13,11 +13,11 @@ class ActorNet(nn.Module):
         super(ActorNet, self).__init__()
 
         self.net = nn.Sequential(
-            nn.Linear(obs_size, HIDDEN_SIZE),
+            nn.Linear(obs_size, 64),
             nn.ReLU(),
-            nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
+            nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(HIDDEN_SIZE, n_actions),
+            nn.Linear(64, n_actions),
             # nn.Tanh()
             nn.Sigmoid(),
         )
@@ -45,20 +45,20 @@ class CriticNet(nn.Module):
         super(CriticNet, self).__init__()
 
         self.obs_net = nn.Sequential(
-            nn.Linear(obs_size * n_agents, HIDDEN_SIZE),
+            nn.Linear(obs_size * n_agents, 64),
             nn.ReLU(),
-            nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
+            nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(HIDDEN_SIZE, obs_size * n_agents),
+            nn.Linear(64, obs_size * n_agents),
             nn.ReLU(),
         )
 
         self.out_net = nn.Sequential(
-            nn.Linear(obs_size * n_agents + n_actions * n_agents, HIDDEN_SIZE),
+            nn.Linear(obs_size * n_agents + n_actions * n_agents, 64),
             nn.ReLU(),
-            nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
+            nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(HIDDEN_SIZE, 1),
+            nn.Linear(64, 1),
         )
 
         self.n_actions = n_actions
