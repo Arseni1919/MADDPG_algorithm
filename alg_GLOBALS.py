@@ -4,6 +4,7 @@
 import os
 import time
 import logging
+from pprint import pprint
 from collections import namedtuple, deque
 from termcolor import colored
 
@@ -29,6 +30,7 @@ load_dotenv()
 # ------------------------------------------- #
 
 from pettingzoo.mpe import simple_v2
+from pettingzoo.utils import random_demo
 
 
 

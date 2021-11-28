@@ -1,40 +1,57 @@
 import gym.spaces
+import pettingzoo
 import torch
 
 from alg_GLOBALS import *
 
 
-class MultiAgentEnv:
-    def __init__(self, env):
-        self.env = env
-        self.env.reset()
-        self.state_stat = RunningStateStat(self.env.last()[0])
+class MultiAgentParallelEnvWrapper:
+    def __init__(self, parallel_env):
+        if not isinstance(parallel_env, pettingzoo.ParallelEnv):
+            raise RuntimeError(f'~[ERROR]: Not a parallel env!')
 
-    def observation_size(self):
-        pass
+        self.parallel_env = parallel_env
+        self.agents = self.parallel_env.agents
+        self.num_agents = self.parallel_env.num_agents
+        self.max_num_agents = self.parallel_env.max_num_agents
+        self.possible_agents = self.parallel_env.possible_agents
 
-    def action_size(self):
-        pass
+        # STATE STATISTICS
+        self.state_stats = {}
+        observations = self.parallel_env.reset()
+        for agent in self.agents:
+            state_stat = RunningStateStat(observations[agent])
+            self.state_stats[agent] = state_stat
+
+    def observation_space(self, agent):
+        return self.parallel_env.observation_space(agent)
+
+    def observation_size(self, agent):
+        return self.parallel_env.observation_space(agent).shape[0]
+
+    def action_space(self, agent):
+        return self.parallel_env.action_space(agent)
+
+    def action_size(self, agent):
+        return self.parallel_env.action_space(agent).shape[0]
 
     def reset(self):
-        pass
+        return self.parallel_env.reset()
 
-    def step(self):
-        pass
+    def step(self, actions):
+        observations, rewards, dones, infos = self.parallel_env.step(actions)
+        return observations, rewards, dones, infos
 
-    def render(self):
-        pass
+    def render(self, mode='human'):
+        self.parallel_env.render(mode)
 
     def close(self):
-        pass
+        self.parallel_env.close()
+
+    def seed(self, seed=None):
+        self.parallel_env.seed(seed)
 
     def _prepare_action(self):
-        pass
-
-    def sample_action(self):
-        pass
-
-    def sample_observation(self):
         pass
 
 
@@ -131,7 +148,7 @@ class SingleAgentEnv:
 
     def action_size(self):
         if isinstance(self.env.action_space, gym.spaces.Discrete):
-            # self.env.action_space.n
+            # self.parallel_env.action_space.n
             return 1
         if isinstance(self.env.action_space, gym.spaces.Box):
             return self.env.action_space.shape[0]
