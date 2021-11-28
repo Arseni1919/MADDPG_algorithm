@@ -13,13 +13,14 @@ class ALGPlotter:
     """
     This object is responsible for plotting, logging and neptune updating.
     """
-    def __init__(self, plot_life=True, plot_neptune=False, name='nameless', tags=None, plot_per=1):
+    def __init__(self, plot_life=True, plot_neptune=False, name='nameless', tags=None, plot_per=1, agents=None):
 
         self.plot_life = plot_life
         self.plot_neptune = plot_neptune
         self.name = name
         self.tags = [] if tags is None else tags
         self.plot_per = plot_per
+        self.agents = agents
 
         self.run = {}
         self.neptune_initiated = False
@@ -29,27 +30,27 @@ class ALGPlotter:
             self.fig.suptitle(f'{name}')
             self.fig.tight_layout()
             # ax_1 = fig.add_subplot(1, 1, 1, projection='3d')
-            self.ax_1 = self.fig.add_subplot(1, 5, 1, projection='3d')
-            self.ax_2 = self.fig.add_subplot(1, 5, 2)
-            self.ax_3 = self.fig.add_subplot(1, 5, 3)
-            self.ax_4 = self.fig.add_subplot(1, 5, 4)
-            self.ax_5 = self.fig.add_subplot(1, 5, 5)
+            # self.ax_1 = self.fig.add_subplot(1, 5, 1, projection='3d')
+            self.ax_2 = self.fig.add_subplot(1, 4, 1)
+            self.ax_3 = self.fig.add_subplot(1, 4, 2)
+            self.ax_4 = self.fig.add_subplot(1, 4, 3)
+            self.ax_5 = self.fig.add_subplot(1, 4, 4)
 
-            self.mean_list = []
-            self.std_list = []
-            self.loss_list_actor = []
+            self.means_list = {agent: [] for agent in self.agents}
+            self.stds_list = {agent: [] for agent in self.agents}
+            self.losses_list_actor = {agent: [] for agent in self.agents}
             self.loss_list_critic = []
             self.total_scores = [0]
             self.total_avg_scores = [0]
-            self.list_state_mean_1 = []
-            self.list_state_std_1 = []
+            self.state_means = {agent: [] for agent in self.agents}
+            self.state_stds = {agent: [] for agent in self.agents}
             self.list_state_mean_2 = []
             self.list_state_std_2 = []
 
         print(colored(f'~[INFO]: "ALGPlotter instance created."', 'green'))
 
-    def plot(self, iteration, average_result_dict,
-             # actor_mean, actor_std, loss, loss_critic,
+    def plot(self, iteration, average_result_dict, loss_critic,
+             means, stds, losses_actor, state_stats
              # actor_output_tensor, observations_tensor,
              # scores, avg_scores, state_stat_mean, state_stat_std
              ):
@@ -59,10 +60,13 @@ class ALGPlotter:
             self.total_avg_scores.append(self.total_avg_scores[-1] * 0.9 + np.mean(average_scores) * 0.1)
             # PLOT
             # mean_list.append(actor_output_tensor.mean().detach().squeeze().item())
-            # self.mean_list.append(actor_mean.mean().detach().squeeze().item())
-            # self.std_list.append(actor_std.mean().detach().squeeze().item())
-            # self.loss_list_actor.append(loss.item())
-            # self.loss_list_critic.append(loss_critic.item())
+            for agent in self.agents:
+                self.losses_list_actor[agent].append(losses_actor[agent].item())
+                self.means_list[agent].append(means[agent].mean().detach().squeeze().item())
+                self.stds_list[agent].append(stds[agent].mean().detach().squeeze().item())
+                self.state_means[agent].append(np.mean(state_stats[agent].mean()))
+                self.state_stds[agent].append(np.mean(state_stats[agent].std()))
+            self.loss_list_critic.append(loss_critic.item())
             # self.list_state_mean_1.append(state_stat_mean[0])
             # self.list_state_mean_2.append(state_stat_mean[1])
             # self.list_state_std_1.append(state_stat_std[0])
@@ -84,18 +88,20 @@ class ALGPlotter:
                 # self.ax_1.legend()
 
                 # AX 2
-                # self.ax_2.cla()
-                # self.ax_2.plot(self.mean_list, label='mean')
-                # self.ax_2.plot(self.std_list, label='std')
-                # self.ax_2.set_title('Mean & STD')
-                # self.ax_2.legend()
+                self.ax_2.cla()
+                for agent in self.agents:
+                    self.ax_2.plot(self.means_list[agent], label=f'mean ({agent})')
+                    self.ax_2.plot(self.stds_list[agent], label=f'std ({agent})', linestyle='--')
+                self.ax_2.set_title('Mean & STD')
+                self.ax_2.legend()
 
                 # AX 3
-                # self.ax_3.cla()
-                # self.ax_3.plot(self.loss_list_actor, label='actor')
-                # self.ax_3.plot(self.loss_list_critic, label='critic')
-                # self.ax_3.set_title('Loss')
-                # self.ax_3.legend()
+                self.ax_3.cla()
+                for agent in self.agents:
+                    self.ax_3.plot(self.losses_list_actor[agent], label=f'{agent}')
+                self.ax_3.plot(self.loss_list_critic, label='critic')
+                self.ax_3.set_title('Loss')
+                self.ax_3.legend()
 
                 # AX 4
                 self.ax_4.cla()
@@ -105,13 +111,12 @@ class ALGPlotter:
                 self.ax_4.legend()
 
                 # AX 5
-                # self.ax_5.cla()
-                # self.ax_5.plot(self.list_state_mean_1, label='m1', marker='.', color='b')
-                # self.ax_5.plot(self.list_state_std_1, label='s1', linestyle='--', color='b')
-                # self.ax_5.plot(self.list_state_mean_2, label='m2', marker='.', color='g')
-                # self.ax_5.plot(self.list_state_std_2, label='s2', linestyle='--', color='g')
-                # self.ax_5.set_title('State stat')
-                # self.ax_5.legend()
+                self.ax_5.cla()
+                for agent in self.agents:
+                    self.ax_5.plot(self.state_means[agent], label=f'mean ({agent})')
+                    self.ax_5.plot(self.state_stds[agent], label=f'std ({agent})', linestyle='--')
+                self.ax_5.set_title('State stat')
+                self.ax_5.legend()
 
                 plt.pause(0.05)
 

@@ -30,7 +30,8 @@ load_dotenv()
 # ------------------FOR ENV:----------------- #
 # ------------------------------------------- #
 
-from pettingzoo.mpe import simple_v2
+from pettingzoo.mpe import simple_v2, simple_spread_v2
+from pettingzoo.butterfly import pistonball_v4
 from pettingzoo.utils import random_demo
 
 

@@ -13,6 +13,7 @@ class MultiAgentParallelEnvWrapper:
     2. Normalize states of observations
 
     """
+
     def __init__(self, parallel_env):
         if not isinstance(parallel_env, pettingzoo.ParallelEnv):
             raise RuntimeError(f'~[ERROR]: Not a parallel env!')
@@ -51,9 +52,12 @@ class MultiAgentParallelEnvWrapper:
 
     def step(self, actions_t):
         # ACTION TENSOR TO NUMPY
-        actions = {agent: actions_t[agent].detach().squeeze().numpy() for agent in self.agents}
+        actions = {agent: np.clip(actions_t[agent].detach().squeeze().numpy(), 0, 1) for agent in self.agents}
         # STEP
-        observations, rewards, dones, infos = self.parallel_env.step(actions)
+        try:
+            observations, rewards, dones, infos = self.parallel_env.step(actions)
+        except:
+            pass
         # NUMPY TO TENSORS
         observations_t = {agent: torch.tensor(observations[agent]) for agent in self.agents}
         rewards_t = {agent: torch.tensor(rewards[agent]) for agent in self.agents}
@@ -77,7 +81,8 @@ class MultiAgentParallelEnvWrapper:
         for agent in self.agents:
             obs_np = obs_tensor[agent].detach().squeeze().numpy()
             self.update(agent, obs_np)
-            obs_np = np.clip((obs_np - self.state_stats[agent].mean()) / (self.state_stats[agent].std() + 1e-6), -10., 10.)
+            obs_np = np.clip((obs_np - self.state_stats[agent].mean()) / (self.state_stats[agent].std() + 1e-6), -10.,
+                             10.)
             output_state_tensor = torch.FloatTensor(obs_np)
             obs_tensor[agent] = output_state_tensor
         return obs_tensor
@@ -86,7 +91,8 @@ class MultiAgentParallelEnvWrapper:
         self.state_stats[agent].len += 1
         old_mean = self.state_stats[agent].running_mean.copy()
         self.state_stats[agent].running_mean[...] = old_mean + (state - old_mean) / self.state_stats[agent].len
-        self.state_stats[agent].running_std[...] = self.state_stats[agent].running_std + (state - old_mean) * (state - self.state_stats[agent].running_mean)
+        self.state_stats[agent].running_std[...] = self.state_stats[agent].running_std + (state - old_mean) * (
+                    state - self.state_stats[agent].running_mean)
 
 
 class RunningStateStat:
@@ -187,7 +193,3 @@ class SingleAgentEnv:
         if isinstance(self.env.action_space, gym.spaces.Box):
             return self.env.action_space.shape[0]
         return None
-
-
-
-
