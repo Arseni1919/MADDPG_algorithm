@@ -26,10 +26,12 @@ def play_parallel_env(parallel_env, render=True, episodes=10, model=None):
         for step in range(max_cycles):
             if model:
                 actions = {agent: parallel_env.action_space(agent).sample() for agent in parallel_env.agents}
+                actions_t = {agent: torch.tensor(actions[agent]) for agent in parallel_env.agents}
                 pass
             else:
                 actions = {agent: parallel_env.action_space(agent).sample() for agent in parallel_env.agents}
-            observations, rewards, dones, infos = parallel_env.step(actions)
+                actions_t = {agent: torch.tensor(actions[agent]) for agent in parallel_env.agents}
+            observations, rewards, dones, infos = parallel_env.step(actions_t)
             for agent in parallel_env.agents:
                 result_dict[agent] += rewards[agent]
 

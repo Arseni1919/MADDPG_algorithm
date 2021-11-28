@@ -44,11 +44,22 @@ class MultiAgentParallelEnvWrapper:
         return self.parallel_env.action_space(agent).shape[0]
 
     def reset(self):
-        return self.parallel_env.reset()
+        observations = self.parallel_env.reset()
+        observations_t = {agent: torch.tensor(observations[agent]) for agent in self.agents}
+        observations_t = self.get_normalized(observations_t)
+        return observations_t
 
-    def step(self, actions):
+    def step(self, actions_t):
+        # ACTION TENSOR TO NUMPY
+        actions = {agent: actions_t[agent].detach().squeeze().numpy() for agent in self.agents}
+        # STEP
         observations, rewards, dones, infos = self.parallel_env.step(actions)
-        return observations, rewards, dones, infos
+        # NUMPY TO TENSORS
+        observations_t = {agent: torch.tensor(observations[agent]) for agent in self.agents}
+        rewards_t = {agent: torch.tensor(rewards[agent]) for agent in self.agents}
+        dones_t = {agent: torch.tensor(dones[agent]) for agent in self.agents}
+        observations_t = self.get_normalized(observations_t)
+        return observations_t, rewards_t, dones_t, infos
 
     def render(self, mode='human'):
         self.parallel_env.render(mode)
@@ -61,6 +72,21 @@ class MultiAgentParallelEnvWrapper:
 
     def _prepare_action(self):
         pass
+
+    def get_normalized(self, obs_tensor):
+        for agent in self.agents:
+            obs_np = obs_tensor[agent].detach().squeeze().numpy()
+            self.update(agent, obs_np)
+            obs_np = np.clip((obs_np - self.state_stats[agent].mean()) / (self.state_stats[agent].std() + 1e-6), -10., 10.)
+            output_state_tensor = torch.FloatTensor(obs_np)
+            obs_tensor[agent] = output_state_tensor
+        return obs_tensor
+
+    def update(self, agent, state):
+        self.state_stats[agent].len += 1
+        old_mean = self.state_stats[agent].running_mean.copy()
+        self.state_stats[agent].running_mean[...] = old_mean + (state - old_mean) / self.state_stats[agent].len
+        self.state_stats[agent].running_std[...] = self.state_stats[agent].running_std + (state - old_mean) * (state - self.state_stats[agent].running_mean)
 
 
 class RunningStateStat:

@@ -46,18 +46,9 @@ class CriticNet(nn.Module):
 
         self.obs_net = nn.Sequential(
             nn.Linear(obs_size * n_agents, 64),
-            nn.ReLU(),
+            nn.ELU(),
             nn.Linear(64, 64),
-            nn.ReLU(),
-            nn.Linear(64, obs_size * n_agents),
-            nn.ReLU(),
-        )
-
-        self.out_net = nn.Sequential(
-            nn.Linear(obs_size * n_agents + n_actions * n_agents, 64),
-            nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),
+            nn.ELU(),
             nn.Linear(64, 1),
         )
 
@@ -66,16 +57,8 @@ class CriticNet(nn.Module):
         self.n_agents = n_agents
         self.entropy_term = 0
 
-    def forward(self, state, action):
-        if type(state) is not torch.Tensor:
-            # state = Variable(torch.from_numpy(state).float().unsqueeze(0))
-            state = Variable(torch.tensor(state, requires_grad=True).float().unsqueeze(0))
-            action = Variable(torch.tensor(action, requires_grad=True).float().unsqueeze(0))
-
+    def forward(self, state):
         state = state.float()
-        obs = self.obs_net(state)
-        cat = torch.cat([obs, action], dim=1)
-        value = self.out_net(cat)
-
+        value = self.obs_net(state)
         return value
 
