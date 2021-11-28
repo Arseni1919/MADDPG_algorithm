@@ -46,7 +46,7 @@ class ALGPlotter:
 
         print(colored(f'~[INFO]: "ALGPlotter instance created."', 'green'))
 
-    def plots_online(self, actor_mean, actor_std, loss, loss_critic, i,
+    def plot(self, actor_mean, actor_std, loss, loss_critic, i,
                      actor_output_tensor, observations_tensor,
                      scores, avg_scores, state_stat_mean, state_stat_std):
         if self.plot_life:

@@ -1,17 +1,61 @@
+import math
+
 from alg_GLOBALS import *
 from alg_nets import *
 from alg_plotter import ALGPlotter
 from alg_env_wrapper import MultiAgentParallelEnvWrapper
+from alg_env_demo import play_parallel_env, load_and_play
 
 
 def train():
-    pass
+    best_score = - math.inf
+    for episode in range(N_EPISODES):
+
+        # PLAY EPISODE
+        observations = env.reset()
+        result_dict = {agent: 0 for agent in env.agents}
+        while True:
+            actions = {agent: env.action_space(agent).sample() for agent in env.agents}
+            observations, rewards, dones, infos = env.step(actions)
+            for agent in env.agents:
+                result_dict[agent] += rewards[agent]
+
+            if False not in dones.values():
+                break
+
+        # RENDER
+        if episode > N_EPISODES - 5:
+            print(f'Episode {episode + 1}:')
+            play_parallel_env(env, True, 1, actor_old)
+            # pass
+
+        # SAVE
+        average_score = sum(result_dict.values())
+        if average_score > best_score:
+            best_score = average_score
+            save_results(SAVE_PATH, actor)
+
+    env.close()
+
+
+def save_results(path, model_to_save):
+    # SAVE
+    if SAVE_RESULTS:
+        # SAVING...
+        print(colored(f"Saving model...", 'green'))
+        torch.save({
+            'model': model_to_save,
+            # 'len': env.state_stat.len,
+            # 'mean': env.state_stat.running_mean,
+            # 'std': env.state_stat.running_std,
+        }, path)
+    return path
 
 
 if __name__ == '__main__':
 
     # --------------------------- # PARAMETERS # -------------------------- #
-    M_EPISODES = 1000
+    N_EPISODES = 2
     BATCH_SIZE = 64  # size of the batches
     REPLAY_BUFFER_SIZE = BATCH_SIZE * 1000
     LR_CRITIC = 1e-2  # learning rate
@@ -62,8 +106,7 @@ if __name__ == '__main__':
 
     # Example Plays
     print(colored('Example run...', 'green'))
-    # TODO
-    # load_and_play(parallel_env, 5, path_to_save)
+    load_and_play(env, 5, SAVE_PATH)
 
 
 # print(colored(f'\n~[WARNING]: {message}', 'yellow'), end=end)
