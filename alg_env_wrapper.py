@@ -6,11 +6,20 @@ from alg_GLOBALS import *
 
 
 class MultiAgentParallelEnvWrapper:
+    """
+    The main duties of this wrapper:
+
+    1. Receive inputs and transform outputs as tensors
+    2. Normalize states of observations
+
+    """
     def __init__(self, parallel_env):
         if not isinstance(parallel_env, pettingzoo.ParallelEnv):
             raise RuntimeError(f'~[ERROR]: Not a parallel env!')
 
         self.parallel_env = parallel_env
+        observations = self.parallel_env.reset()
+
         self.agents = self.parallel_env.agents
         self.num_agents = self.parallel_env.num_agents
         self.max_num_agents = self.parallel_env.max_num_agents
@@ -18,7 +27,6 @@ class MultiAgentParallelEnvWrapper:
 
         # STATE STATISTICS
         self.state_stats = {}
-        observations = self.parallel_env.reset()
         for agent in self.agents:
             state_stat = RunningStateStat(observations[agent])
             self.state_stats[agent] = state_stat

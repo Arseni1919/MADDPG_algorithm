@@ -40,11 +40,11 @@ if __name__ == '__main__':
     plotter = ALGPlotter(plot_life=PLOT_LIVE, plot_neptune=NEPTUNE, name='my_run_ppo', tags=[ENV_NAME])
 
     # --------------------------- # NETS # -------------------------- #
-    critic = CriticNet(obs_size=env.observation_size(env.agents[0]), n_actions=env.action_size(env.agents[0]))
+    # critic = CriticNet(obs_size=env.observation_size(env.agents[0]), n_actions=env.action_size(env.agents[0]))
     actor = ActorNet(obs_size=env.observation_size(env.agents[0]), n_actions=env.action_size(env.agents[0]))
     actor_old = ActorNet(obs_size=env.observation_size(env.agents[0]), n_actions=env.action_size(env.agents[0]))
     # --------------------------- # OPTIMIZERS # -------------------------- #
-    critic_optim = torch.optim.Adam(critic.parameters(), lr=LR_CRITIC)
+    # critic_optim = torch.optim.Adam(critic.parameters(), lr=LR_CRITIC)
     actor_optim = torch.optim.Adam(actor.parameters(), lr=LR_ACTOR)
 
     # --------------------------- # REPLAY BUFFER # -------------------------- #
